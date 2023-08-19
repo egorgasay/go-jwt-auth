@@ -1,13 +1,15 @@
 package handler
 
+import "go.uber.org/zap"
+
 type Handler struct {
 	logic  useCase
-	logger logger.Logger
+	logger *zap.Logger
 }
 
 type useCase interface {
 }
 
-func New() Handler {
-	return Handler{}
+func New(logic useCase, logger *zap.Logger) Handler {
+	return Handler{logic: logic, logger: logger}
 }

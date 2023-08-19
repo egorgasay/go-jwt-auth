@@ -1,13 +1,15 @@
 package usecase
 
+import "go.uber.org/zap"
+
 type UseCase struct {
 	storage storage
-	logger  logger.Logger
+	logger  *zap.Logger
 }
 
 type storage interface {
 }
 
-func New() UseCase {
-	return UseCase{}
+func New(st storage, logger *zap.Logger) UseCase {
+	return UseCase{storage: st, logger: logger}
 }
