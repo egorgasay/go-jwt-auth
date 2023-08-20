@@ -1,0 +1,118 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: GO JWT AUTH API
+  description: API methods for GO JWT AUTH
+
+paths:
+  /v1/tokens:
+    get:
+      summary: Issues a pair of Access, Refresh tokens to the user.
+      parameters:
+        - $ref: '#/components/parameters/GUID'
+      responses:
+        200:
+          description: Access, Refresh tokens successfully issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: 'invalid guid'
+        500:
+          $ref: '#/components/responses/ServerErrorResponse'
+
+  /v1/refresh:
+    post:
+      summary: Performs Refresh operation on a pair of Access, Refresh tokens.
+      parameters:
+        - $ref: '#/components/parameters/GUID'
+      responses:
+        200:
+          description: Access, Refresh tokens successfully refreshed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: 'invalid guid'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: 'the token was not provided'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: 'token expired'
+        500:
+          $ref: '#/components/responses/ServerErrorResponse'
+
+components:
+  schemas:
+    Success:
+      type: object
+      required:
+        - code
+        - codestring
+      properties:
+        access:
+          description: Access token
+          type: string
+          format: string
+          example: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTI1NDUwNTUsImd1aWQiOiJxZmVnZyJ9.MPsptOKHc-6qfbLsJcK-HC_yR_PMINTWIs7gzvARRZ9o7vPLvkzMc1WVmhnbJ8W2qSaoO9DcK9jt7p_OzmXWcw'
+        refresh:
+          description: Refresh token
+          type: string
+          format: string
+          example: 'ODcxYTY2Y2EtM2Y2Yi0xMWVlLTlkNTEtMDBmZjkwMDEyY2Ix'
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          description: Описание ошибки
+          type: string
+          format: string
+          example: "bad request"
+
+  responses:
+    ServerErrorResponse:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "can't sign token"
+
+  parameters:
+    GUID:
+      in: query
+      description: GUID used to identify the user
+      name: guid
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: 'qwdqfe12e1e14'
