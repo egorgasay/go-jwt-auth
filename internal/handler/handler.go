@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
@@ -12,8 +13,8 @@ type Handler struct {
 }
 
 type useCase interface {
-	GetTokens(guid string) (string, string, error)
-	RefreshTokens(refresh string) (string, string, error)
+	GetTokens(ctx context.Context, guid string) (string, string, error)
+	RefreshTokens(ctx context.Context, refresh string) (string, string, error)
 }
 
 func New(logic useCase, logger *zap.Logger) *Handler {
@@ -23,7 +24,7 @@ func New(logic useCase, logger *zap.Logger) *Handler {
 func (h *Handler) GetTokens(c *gin.Context) {
 	guid := c.DefaultQuery("guid", "")
 
-	access, refresh, err := h.logic.GetTokens(guid)
+	access, refresh, err := h.logic.GetTokens(c, guid)
 	if err != nil {
 		HTTPError(c, err)
 		return
@@ -36,9 +37,9 @@ func (h *Handler) GetTokens(c *gin.Context) {
 }
 
 func (h *Handler) RefreshTokens(c *gin.Context) {
-	refresh := c.DefaultQuery("refresh", "")
+	refresh := c.DefaultQuery("rtoken", "")
 
-	access, refresh, err := h.logic.RefreshTokens(refresh)
+	access, refresh, err := h.logic.RefreshTokens(c, refresh)
 	if err != nil {
 		HTTPError(c, err)
 		return

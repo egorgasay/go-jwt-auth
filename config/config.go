@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"go-jwt-auth/internal/service"
+	"go-jwt-auth/internal/storage"
 	"io"
 	"os"
 )
 
 const (
-	_defaultConfigPath = "config.json"
+	_defaultConfigPath = "config/config.json"
 )
 
 // Flag is a flag for config.
@@ -20,12 +22,13 @@ type Flag struct {
 var _f = &Flag{}
 
 type Config struct {
-	Host  string `json:"host"`
+	Port  string `json:"port"`
 	HTTPS bool   `json:"https"`
 
 	PathToConfig string `json:"-"`
 
-	DSN string `json:"dsn"`
+	StorageConfig storage.Config    `json:"storage"`
+	JWTConfig     service.JWTConfig `json:"jwt"`
 }
 
 func init() {
@@ -33,38 +36,37 @@ func init() {
 }
 
 // New creates a new config.
-func New() (*Config, error) {
+func New() (conf Config, err error) {
 	flag.Parse()
 
 	if _f.PathToConfig == nil {
-		return nil, fmt.Errorf("config file is required")
+		return conf, fmt.Errorf("unexpected error, PathToConfig is nil")
 	}
 
-	if err := Modify(*_f.PathToConfig); err != nil {
-		return nil, fmt.Errorf("can't modify config: %v", err)
+	if conf, err = FromJSON(*_f.PathToConfig); err != nil {
+		return conf, fmt.Errorf("can't load config: %v", err)
 	}
 
-	return &Config{}, nil
+	return conf, nil
 }
 
-// Modify modifies the config by the file provided.
-func Modify(filename string) error {
+// FromJSON loads a config from a json file.
+func FromJSON(filename string) (conf Config, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return fmt.Errorf("can't open %s: %v", filename, err)
+		return conf, fmt.Errorf("can't open %s: %v", filename, err)
 	}
 	defer file.Close()
 
 	all, err := io.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("can't read %s: %v", filename, err)
+		return conf, fmt.Errorf("can't read %s: %v", filename, err)
 	}
 
-	var fcopy Config
-	err = json.Unmarshal(all, &fcopy)
+	err = json.Unmarshal(all, &conf)
 	if err != nil {
-		return fmt.Errorf("can't unmarshal %s: %v", filename, err)
+		return conf, fmt.Errorf("can't unmarshal %s: %v", filename, err)
 	}
 
-	return nil
+	return conf, nil
 }

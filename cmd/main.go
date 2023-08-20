@@ -5,8 +5,8 @@ import (
 	"go-jwt-auth/config"
 	"go-jwt-auth/internal/handler"
 	"go-jwt-auth/internal/handler/routes"
+	"go-jwt-auth/internal/service"
 	"go-jwt-auth/internal/storage"
-	"go-jwt-auth/internal/usecase"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -25,12 +25,15 @@ func main() {
 		log.Fatalf("cannot create config instance %v", err)
 	}
 
-	st, err := storage.New(logger)
+	st, err := storage.New(conf.StorageConfig, logger)
 	if err != nil {
 		log.Fatalf("cannot create storage instance %v", err)
 	}
 
-	useCase := usecase.New(st, logger)
+	useCase, err := service.NewTokenManager(st, logger, conf.JWTConfig)
+	if err != nil {
+		log.Fatalf("cannot create service instance %v", err)
+	}
 
 	h := handler.New(useCase, logger)
 	router := gin.Default()
@@ -43,7 +46,7 @@ func main() {
 		if conf.HTTPS {
 			log.Fatal("not implemented") // TODO
 		} else {
-			if err := http.ListenAndServe(conf.Host, router); err != nil {
+			if err := http.ListenAndServe(":"+conf.Port, router); err != nil {
 				log.Printf("cannot start http server %v", err)
 			}
 		}

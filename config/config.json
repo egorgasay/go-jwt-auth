@@ -1,5 +1,12 @@
 {
-  "dsh": "AUTO_UP",
-  "host": "127.0.0.1:8080",
+  "storage": {
+    "dsn": "AUTO_UP"
+  },
+  "jwt": {
+    "key": "secret",
+    "access_ttl": "15m",
+    "refresh_ttl": "2160h"
+  },
+  "port": "8080",
   "enable_https": false
 }
