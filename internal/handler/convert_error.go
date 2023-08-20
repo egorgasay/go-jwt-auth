@@ -16,7 +16,7 @@ func HTTPError(c *gin.Context, err error) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
-	case service.ErrSign, service.ErrGenerateUUID:
+	case service.ErrSign, service.ErrGenerateUUID, service.ErrCantHashToken:
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})

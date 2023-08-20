@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"go-jwt-auth/internal/model"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -69,8 +70,14 @@ func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access stri
 		return "", "", err
 	}
 
+	bcryptHash, err := bcryptHashFrom(refresh)
+	if err != nil {
+		tm.logger.Error("can't hash refresh token", zap.Error(err))
+		return "", "", ErrCantHashToken
+	}
+
 	if err := tm.storage.SaveRefresh(ctx, guid, model.RefreshToken{
-		RefreshTokenBCrypt: refresh,
+		RefreshTokenBCrypt: bcryptHash,
 		Exp:                refreshExp,
 	}); err != nil {
 		tm.logger.Error("can't save refresh token", zap.Error(err))
@@ -89,7 +96,13 @@ func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefreshB64 string)
 		return "", "", ErrInvalidToken
 	}
 
-	guid, refToken, err := tm.storage.GetRefTokenAndGUID(ctx, string(oldRefreshBytes))
+	bcryptHash, err := bcryptHashFrom(string(oldRefreshBytes))
+	if err != nil {
+		tm.logger.Error("can't hash refresh token", zap.Error(err))
+		return "", "", ErrCantHashToken
+	}
+
+	guid, refToken, err := tm.storage.GetRefTokenAndGUID(ctx, bcryptHash)
 	if err != nil {
 		tm.logger.Error("can't get refresh token exp and id", zap.Error(err))
 		return "", "", ErrInvalidToken
@@ -101,6 +114,15 @@ func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefreshB64 string)
 	}
 
 	return tm.GetTokens(ctx, guid)
+}
+
+func bcryptHashFrom(token string) (string, error) {
+	bcryptHash, err := bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+
+	return string(bcryptHash), nil
 }
 
 func (tm *TokenManager) generateAccess(guid string) (string, int64, error) {
