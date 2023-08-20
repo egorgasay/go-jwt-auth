@@ -8,8 +8,12 @@ import (
 
 func HTTPError(c *gin.Context, err error) {
 	switch err { // no errors.Is() because we get an explicit error from the service every time.
-	case service.ErrNoToken, service.ErrExpired:
+	case service.ErrNoToken:
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+	case service.ErrExpired:
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"error": err.Error(),
 		})
 	case service.ErrInvalidToken, service.ErrInvalidGUID:

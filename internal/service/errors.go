@@ -3,7 +3,7 @@ package service
 import "fmt"
 
 var (
-	ErrNoToken       = fmt.Errorf("no token")
+	ErrNoToken       = fmt.Errorf("the token was not provided")
 	ErrInvalidToken  = fmt.Errorf("invalid token")
 	ErrSign          = fmt.Errorf("can't sign token")
 	ErrGenerateUUID  = fmt.Errorf("can't generate uuid")
