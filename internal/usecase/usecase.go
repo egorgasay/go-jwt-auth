@@ -10,6 +10,6 @@ type UseCase struct {
 type storage interface {
 }
 
-func New(st storage, logger *zap.Logger) UseCase {
-	return UseCase{storage: st, logger: logger}
+func New(st storage, logger *zap.Logger) *UseCase {
+	return &UseCase{storage: st, logger: logger}
 }

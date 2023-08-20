@@ -10,6 +10,6 @@ type Handler struct {
 type useCase interface {
 }
 
-func New(logic useCase, logger *zap.Logger) Handler {
-	return Handler{logic: logic, logger: logger}
+func New(logic useCase, logger *zap.Logger) *Handler {
+	return &Handler{logic: logic, logger: logger}
 }

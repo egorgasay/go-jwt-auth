@@ -20,7 +20,12 @@ type Flag struct {
 var _f = &Flag{}
 
 type Config struct {
-	PathToConfig string
+	Host  string `json:"host"`
+	HTTPS bool   `json:"https"`
+
+	PathToConfig string `json:"-"`
+
+	DSN string `json:"dsn"`
 }
 
 func init() {
@@ -55,9 +60,11 @@ func Modify(filename string) error {
 		return fmt.Errorf("can't read %s: %v", filename, err)
 	}
 
-	err = json.Unmarshal(all, &_f)
+	var fcopy Config
+	err = json.Unmarshal(all, &fcopy)
 	if err != nil {
 		return fmt.Errorf("can't unmarshal %s: %v", filename, err)
 	}
+
 	return nil
 }
