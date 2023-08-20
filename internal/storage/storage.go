@@ -55,7 +55,7 @@ func (s Storage) SaveRefresh(ctx context.Context, guid string, refresh model.Ref
 	return nil
 }
 
-func (s Storage) GetRefTokenAndID(ctx context.Context, refresh string) (guid string, rt model.RefreshToken, err error) {
+func (s Storage) GetRefTokenAndGUID(ctx context.Context, refresh string) (guid string, rt model.RefreshToken, err error) {
 	var us model.User
 	filter := bson.D{{_refreshTokenBcrypt, refresh}}
 	err = s.db.Collection(_user).FindOneAndDelete(ctx, filter).Decode(&us)

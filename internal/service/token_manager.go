@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"go-jwt-auth/internal/model"
@@ -25,7 +26,7 @@ type JWTConfig struct {
 
 type storage interface {
 	SaveRefresh(ctx context.Context, guid string, refresh model.RefreshToken) error
-	GetRefTokenAndID(ctx context.Context, refresh string) (guid string, rt model.RefreshToken, err error)
+	GetRefTokenAndGUID(ctx context.Context, refresh string) (guid string, rt model.RefreshToken, err error)
 }
 
 func NewTokenManager(st storage, logger *zap.Logger, jwtConf JWTConfig) (*TokenManager, error) {
@@ -76,11 +77,19 @@ func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access stri
 		return "", "", ErrInvalidToken
 	}
 
-	return access, refresh, nil
+	refreshB64 := base64.StdEncoding.EncodeToString([]byte(refresh))
+
+	return access, refreshB64, nil
 }
 
-func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefresh string) (access string, refresh string, err error) {
-	guid, refToken, err := tm.storage.GetRefTokenAndID(ctx, oldRefresh)
+func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefreshB64 string) (access string, refresh string, err error) {
+	oldRefreshBytes, err := base64.StdEncoding.DecodeString(oldRefreshB64)
+	if err != nil {
+		tm.logger.Error("can't decode refresh token", zap.Error(err))
+		return "", "", ErrInvalidToken
+	}
+
+	guid, refToken, err := tm.storage.GetRefTokenAndGUID(ctx, string(oldRefreshBytes))
 	if err != nil {
 		tm.logger.Error("can't get refresh token exp and id", zap.Error(err))
 		return "", "", ErrInvalidToken
