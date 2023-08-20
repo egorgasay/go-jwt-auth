@@ -1,12 +1,18 @@
 openapi: 3.0.0
 info:
   version: 1.0.0
-  title: GO JWT AUTH API
+  title: Go JWT Auth API
   description: API methods for GO JWT AUTH
+
+tags:
+  - name: Go JWT Auth API
+    description: API methods for GO JWT AUTH
 
 paths:
   /v1/tokens:
     get:
+      tags:
+      - Go JWT Auth API
       summary: Issues a pair of Access, Refresh tokens to the user.
       parameters:
         - $ref: '#/components/parameters/GUID'
@@ -30,6 +36,8 @@ paths:
 
   /v1/refresh:
     post:
+      tags:
+        - Go JWT Auth API
       summary: Performs Refresh operation on a pair of Access, Refresh tokens.
       parameters:
         - $ref: '#/components/parameters/GUID'
