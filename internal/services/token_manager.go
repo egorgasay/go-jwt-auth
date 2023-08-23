@@ -1,11 +1,11 @@
-package service
+package services
 
 import (
 	"context"
 	"encoding/base64"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"go-jwt-auth/internal/model"
+	"go-jwt-auth/internal/models"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -26,8 +26,8 @@ type JWTConfig struct {
 }
 
 type storage interface {
-	SaveRefresh(ctx context.Context, guid string, refresh model.RefreshToken) error
-	GetRefTokenAndGUID(ctx context.Context, refresh string) (guid string, rt model.RefreshToken, err error)
+	SaveRefresh(ctx context.Context, guid string, refresh models.RefreshToken) error
+	GetRefTokenAndGUID(ctx context.Context, refresh string) (guid string, rt models.RefreshToken, err error)
 }
 
 func NewTokenManager(st storage, logger *zap.Logger, jwtConf JWTConfig) (*TokenManager, error) {
@@ -76,7 +76,7 @@ func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access stri
 		return "", "", ErrCantHashToken
 	}
 
-	if err := tm.storage.SaveRefresh(ctx, guid, model.RefreshToken{
+	if err := tm.storage.SaveRefresh(ctx, guid, models.RefreshToken{
 		RefreshTokenBCrypt: bcryptHash,
 		Exp:                refreshExp,
 	}); err != nil {

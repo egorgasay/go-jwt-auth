@@ -1,4 +1,4 @@
-package model
+package models
 
 type RefreshToken struct {
 	RefreshTokenBCrypt string `bson:"refresh_token_bcrypt"`

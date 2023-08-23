@@ -1,10 +1,10 @@
-package config
+package lib
 
 import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"go-jwt-auth/internal/service"
+	"go-jwt-auth/internal/services"
 	"go-jwt-auth/internal/storage"
 	"io"
 	"os"
@@ -14,36 +14,21 @@ const (
 	_defaultConfigPath = "config/config.json"
 )
 
-// Flag is a flag for config.
-type Flag struct {
-	PathToConfig *string
-}
-
-var _f = &Flag{}
-
 type Config struct {
 	Port  string `json:"port"`
 	HTTPS bool   `json:"https"`
 
 	PathToConfig string `json:"-"`
 
-	StorageConfig storage.Config    `json:"storage"`
-	JWTConfig     service.JWTConfig `json:"jwt"`
-}
-
-func init() {
-	_f.PathToConfig = flag.String("config", _defaultConfigPath, "-config=path/to/conf.json")
+	StorageConfig storage.Config     `json:"storage"`
+	JWTConfig     services.JWTConfig `json:"jwt"`
 }
 
 // New creates a new config.
-func New() (conf Config, err error) {
+func NewConfig() (conf Config, err error) {
 	flag.Parse()
 
-	if _f.PathToConfig == nil {
-		return conf, fmt.Errorf("unexpected error, PathToConfig is nil")
-	}
-
-	if conf, err = FromJSON(*_f.PathToConfig); err != nil {
+	if conf, err = FromJSON(_defaultConfigPath); err != nil {
 		return conf, fmt.Errorf("can't load config: %v", err)
 	}
 
