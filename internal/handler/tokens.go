@@ -7,19 +7,19 @@ import (
 	"net/http"
 )
 
-type TokensHandler struct {
+type TokenHandler struct {
 	tokens domains.TokenManager
 	logger lib.Logger
 }
 
-func NewTokensHandler(logger lib.Logger, service domains.TokenManager) TokensHandler {
-	return TokensHandler{
+func NewTokensHandler(logger lib.Logger, service domains.TokenManager) TokenHandler {
+	return TokenHandler{
 		logger: logger,
 		tokens: service,
 	}
 }
 
-func (h *TokensHandler) GetTokens(c *gin.Context) {
+func (h *TokenHandler) GetTokens(c *gin.Context) {
 	guid := c.DefaultQuery("guid", "")
 
 	access, refresh, err := h.tokens.GetTokens(c, guid)
@@ -34,7 +34,7 @@ func (h *TokensHandler) GetTokens(c *gin.Context) {
 	})
 }
 
-func (h *TokensHandler) RefreshTokens(c *gin.Context) {
+func (h *TokenHandler) RefreshTokens(c *gin.Context) {
 	refresh := c.DefaultQuery("rtoken", "")
 
 	access, refresh, err := h.tokens.RefreshTokens(c, refresh)

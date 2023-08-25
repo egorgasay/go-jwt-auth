@@ -16,7 +16,7 @@ type Database struct {
 }
 
 const (
-	_dbName = "jwt-auth"
+	_dbName = "jwt-auth-db"
 	_autoUp = "AUTO_UP"
 )
 
@@ -24,17 +24,28 @@ func NewDatabase(conf Config) (db Database, err error) {
 	ctx := context.Background()
 	var client *mongo.Client
 
-	switch conf.StorageConfig.DatabaseDSN {
+	switch conf.Storage.DatabaseDSN {
 	case _autoUp:
 		vdbConf := dockerdb.EmptyConfig().Vendor("mongo").DBName(_dbName).
 			NoSQL(func(c dockerdb.Config) (stop bool) {
-				client, err = mongo.Connect(ctx, options.Client().ApplyURI(conf.StorageConfig.DatabaseDSN))
+				dsn := fmt.Sprintf("mongodb://127.0.0.1:%s", c.GetActualPort())
+				opt := options.Client()
+				opt.ApplyURI(dsn)
+				opt.SetTimeout(1 * time.Second)
+
+				client, err = mongo.Connect(ctx, opt)
 				if err != nil {
 					log.Println("can't connect to mongodb", zap.Error(err))
+					return false
 				}
 
-				return client.Ping(ctx, nil) == nil
-			}, 30, 2*time.Second).Build()
+				if err := client.Ping(ctx, nil); err != nil {
+					log.Println("can't ping mongodb", zap.Error(err))
+					return false
+				}
+
+				return true
+			}, 30, 2*time.Second).PullImage().StandardDBPort("27017").Build()
 
 		_, err := dockerdb.New(context.Background(), vdbConf)
 		if err != nil {
@@ -45,7 +56,7 @@ func NewDatabase(conf Config) (db Database, err error) {
 	case "":
 		return db, fmt.Errorf("DatabaseDSN shouldn't be empty")
 	default:
-		client, err = mongo.Connect(ctx, options.Client().ApplyURI(conf.StorageConfig.DatabaseDSN))
+		client, err = mongo.Connect(ctx, options.Client().ApplyURI(conf.Storage.DatabaseDSN))
 		if err != nil {
 			return db, err
 		}

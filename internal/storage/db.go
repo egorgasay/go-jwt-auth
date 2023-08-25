@@ -14,14 +14,17 @@ const (
 	_refreshTokenBcrypt = "refresh_token.refresh_token_bcrypt"
 )
 
+// Database is a struct that contains a database.
 type Database struct {
 	db lib.Database
 }
 
+// NewDatabase creates a new instance of Database.
 func NewDatabase(db lib.Database) domains.Database {
 	return Database{db: db}
 }
 
+// Close closes the database.
 func (d Database) Close() error {
 	if err := d.db.Client().Disconnect(context.Background()); err != nil {
 		return fmt.Errorf("can't disconnect: %v", err)
@@ -29,6 +32,7 @@ func (d Database) Close() error {
 	return nil
 }
 
+// SaveRefresh saves a refresh token to the database.
 func (d Database) SaveRefresh(ctx context.Context, guid string, refresh models.RefreshToken) error {
 	if _, err := d.db.Collection(_user).InsertOne(ctx, models.User{
 		GUID:         guid,
@@ -40,6 +44,7 @@ func (d Database) SaveRefresh(ctx context.Context, guid string, refresh models.R
 	return nil
 }
 
+// GetRefTokenAndGUID retrieves the reference token and GUID from the database.
 func (d Database) GetRefTokenAndGUID(ctx context.Context, refresh string) (guid string, rt models.RefreshToken, err error) {
 	var us models.User
 	filter := bson.D{{_refreshTokenBcrypt, refresh}}

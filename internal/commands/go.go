@@ -16,21 +16,18 @@ func (s *GoCommand) Setup(cmd *cobra.Command) {}
 
 func (s *GoCommand) Run() lib.CommandRunner {
 	return func(
-		middleware middlewares.Middlewares,
-		env lib.Env,
-		router lib.RequestHandler,
+		conf lib.Config,
 		route routes.Routes,
+		reqHandler lib.RequestHandler,
 		logger lib.Logger,
 		database lib.Database,
 	) {
-		middleware.Setup()
 		route.Setup()
 
 		logger.Info("Running server")
-		if env.ServerPort == "" {
-			_ = router.Gin.Run()
-		} else {
-			_ = router.Gin.Run(":" + env.ServerPort)
+		err := reqHandler.Gin.Run(":" + conf.Port)
+		if err != nil {
+			return
 		}
 	}
 }

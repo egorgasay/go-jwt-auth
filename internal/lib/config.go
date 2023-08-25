@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"go-jwt-auth/internal/services"
-	"go-jwt-auth/internal/storage"
+	"go-jwt-auth/internal/config"
 	"io"
 	"os"
 )
 
 const (
-	_defaultConfigPath = "config/config.json"
+	_defaultConfigPath = "config.json"
 )
 
 type Config struct {
@@ -20,11 +19,11 @@ type Config struct {
 
 	PathToConfig string `json:"-"`
 
-	StorageConfig storage.Config     `json:"storage"`
-	JWTConfig     services.JWTConfig `json:"jwt"`
+	Storage config.Storage `json:"storage"`
+	JWT     config.JWT     `json:"jwt"`
 }
 
-// New creates a new config.
+// NewConfig creates a new config.
 func NewConfig() (conf Config, err error) {
 	flag.Parse()
 

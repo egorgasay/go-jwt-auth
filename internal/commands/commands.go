@@ -13,19 +13,28 @@ var cmds = map[string]lib.Command{
 	"go": NewGoCommand(),
 }
 
+// GetSubCommands gives a list of sub commands
+func GetSubCommands(opt fx.Option) []*cobra.Command {
+	var subCommands []*cobra.Command
+	for name, cmd := range cmds {
+		subCommands = append(subCommands, WrapSubCommand(name, cmd, opt))
+	}
+	return subCommands
+}
+
 func WrapSubCommand(name string, cmd lib.Command, opt fx.Option) *cobra.Command {
 	wrappedCmd := &cobra.Command{
 		Use:   name,
 		Short: cmd.Short(),
 		Run: func(c *cobra.Command, args []string) {
-			logger, err := lib.NewSugaredLogger()
+			logger, err := lib.NewLogger()
 			if err != nil {
 				log.Fatalln(err)
 			}
 
 			opts := fx.Options(
 				fx.WithLogger(func() fxevent.Logger {
-					return logger
+					return &logger
 				}),
 				fx.Invoke(cmd.Run()),
 			)
@@ -34,7 +43,7 @@ func WrapSubCommand(name string, cmd lib.Command, opt fx.Option) *cobra.Command 
 			err = app.Start(ctx)
 			defer app.Stop(ctx)
 			if err != nil {
-				logger.Fatal(err)
+				logger.Fatal(err.Error())
 			}
 		},
 	}

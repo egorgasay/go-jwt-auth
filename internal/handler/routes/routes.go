@@ -1,11 +1,33 @@
 package routes
 
-import (
-	"github.com/gin-gonic/gin"
-	"go-jwt-auth/internal/handler"
+import "go.uber.org/fx"
+
+// Module exports dependency to container
+var Module = fx.Options(
+	fx.Provide(NewTokenRoutes),
+	fx.Provide(NewRoutes),
 )
 
-func Routes(r *gin.RouterGroup, h *handler.Handler) {
-	r.GET("/v1/tokens", h.GetTokens)
-	r.POST("/v1/refresh", h.RefreshTokens)
+// Routes contains multiple routes
+type Routes []Route
+
+// Route interface
+type Route interface {
+	Setup()
+}
+
+// NewRoutes sets up routes
+func NewRoutes(
+	tokensRoutes TokenRoutes,
+) Routes {
+	return Routes{
+		tokensRoutes,
+	}
+}
+
+// Setup all the route
+func (r Routes) Setup() {
+	for _, route := range r {
+		route.Setup()
+	}
 }
