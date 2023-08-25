@@ -3,30 +3,32 @@ package services
 import (
 	"context"
 	"encoding/base64"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
+	"errors"
 	"go-jwt-auth/internal/domains"
 	"go-jwt-auth/internal/lib"
 	"go-jwt-auth/internal/models"
 	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
 // TokenManager is a service for managing tokens.
 type TokenManager struct {
-	storage    domains.Repository
+	repository domains.Repository
 	logger     lib.Logger
 	key        []byte
 	accessTTL  time.Duration
 	refreshTTL time.Duration
+	generator  domains.GeneratorService
 }
 
 // NewTokenManager creates a new instance of TokenManager.
-//
-// It takes a repository, a logger, and a config as parameters.
-// It returns a TokenManager and an error.
-func NewTokenManager(st domains.Repository, logger lib.Logger, conf lib.Config) (domains.TokenManager, error) {
+func NewTokenManager(
+	st domains.Repository,
+	logger lib.Logger,
+	conf lib.Config,
+	generator domains.GeneratorService,
+) (domains.TokenManager, error) {
+
 	accessTTL, err := time.ParseDuration(conf.JWT.AccessTTL)
 	if err != nil {
 		logger.Error("can't parse access_ttl", zap.Error(err))
@@ -40,11 +42,12 @@ func NewTokenManager(st domains.Repository, logger lib.Logger, conf lib.Config) 
 	}
 
 	return &TokenManager{
-		storage:    st,
+		repository: st,
 		logger:     logger,
 		key:        []byte(conf.JWT.Key),
 		accessTTL:  accessTTL,
 		refreshTTL: refreshTTL,
+		generator:  generator,
 	}, nil
 }
 
@@ -61,16 +64,16 @@ const (
 // refresh - the refresh token
 // err - any error that occurred during token generation
 func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access string, refresh string, err error) {
-	access, _, err = tm.generateAccess(guid)
+	access, _, err = tm.generator.Access(ctx, guid, tm.key, tm.accessTTL)
 	if err != nil {
 		tm.logger.Error("can't generate access token", zap.Error(err))
-		return "", "", err
+		return "", "", errors.Join(err, ErrGenerate)
 	}
 
-	refresh, refreshExp, err := tm.generateRefresh()
+	refresh, refreshExp, err := tm.generator.Refresh(ctx, tm.refreshTTL)
 	if err != nil {
 		tm.logger.Error("can't generate refresh token", zap.Error(err))
-		return "", "", err
+		return "", "", errors.Join(err, ErrGenerate)
 	}
 
 	bcryptHash, err := bcryptHashFrom(refresh)
@@ -79,12 +82,12 @@ func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access stri
 		return "", "", ErrCantHashToken
 	}
 
-	if err := tm.storage.SaveRefresh(ctx, guid, models.RefreshToken{
+	if err := tm.repository.SaveRefresh(ctx, guid, models.RefreshToken{
 		RefreshTokenBCrypt: bcryptHash,
 		Exp:                refreshExp,
 	}); err != nil {
 		tm.logger.Error("can't save refresh token", zap.Error(err))
-		return "", "", ErrInvalidToken
+		return "", "", errors.Join(err, ErrRepository)
 	}
 
 	refreshB64 := base64.StdEncoding.EncodeToString([]byte(refresh))
@@ -113,7 +116,7 @@ func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefreshB64 string)
 		return "", "", ErrCantHashToken
 	}
 
-	guid, refToken, err := tm.storage.GetRefTokenAndGUID(ctx, bcryptHash)
+	guid, refToken, err := tm.repository.GetRefTokenAndGUID(ctx, bcryptHash)
 	if err != nil {
 		tm.logger.Error("can't get refresh token exp and id", zap.Error(err))
 		return "", "", ErrInvalidToken
@@ -125,51 +128,4 @@ func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefreshB64 string)
 	}
 
 	return tm.GetTokens(ctx, guid)
-}
-
-// bcryptHashFrom generates a bcrypt hash from a given token.
-//
-// It takes a string parameter named 'token' and returns a string representing the bcrypt hash and an error.
-func bcryptHashFrom(token string) (string, error) {
-	bcryptHash, err := bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-
-	return string(bcryptHash), nil
-}
-
-// generateAccess generates an access token for a given GUID.
-func (tm *TokenManager) generateAccess(guid string) (string, int64, error) {
-	if guid == "" {
-		return "", 0, ErrInvalidGUID
-	}
-
-	exp := time.Now().Add(tm.accessTTL).Unix()
-
-	t := jwt.NewWithClaims(jwt.SigningMethodHS512,
-		jwt.MapClaims{
-			_guid: guid,
-			_exp:  exp,
-		})
-
-	access, err := t.SignedString(tm.key)
-	if err != nil {
-		tm.logger.Error("can't sign token", zap.Error(err))
-		return "", exp, ErrSign
-	}
-
-	return access, exp, nil
-}
-
-// generateRefresh generates a refresh token.
-func (tm *TokenManager) generateRefresh() (string, int64, error) {
-	uuidObj, err := uuid.NewUUID()
-	if err != nil {
-		tm.logger.Error("can't generate uuid for refresh token", zap.Error(err))
-		return "", 0, ErrGenerateUUID
-	}
-	refreshExp := time.Now().Add(tm.refreshTTL).Unix()
-
-	return uuidObj.String(), refreshExp, nil
 }

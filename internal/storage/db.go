@@ -2,11 +2,14 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"go-jwt-auth/internal/constants"
 	"go-jwt-auth/internal/domains"
 	"go-jwt-auth/internal/lib"
 	"go-jwt-auth/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const (
@@ -50,6 +53,10 @@ func (d Database) GetRefTokenAndGUID(ctx context.Context, refresh string) (guid 
 	filter := bson.D{{_refreshTokenBcrypt, refresh}}
 	err = d.db.Collection(_user).FindOneAndDelete(ctx, filter).Decode(&us)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return "", models.RefreshToken{}, constants.ErrNotFound
+		}
+
 		return "", rt, err
 	}
 

@@ -1,0 +1,24 @@
+# Notes:
+# github.com/vektra/mockery
+# Mockery is mock generated for github.com/stretchr/testify
+# Version: github.com/vektra/mockery/v2@v2.32.0
+# Warning: Do not use @latest as this will pull from the latest, potentially untagged, commit on master.
+# Running: For use type in terminal mockery
+
+all: false
+replace-type: null
+packages:
+  go-jwt-auth/internal/domains:
+    config:
+      with-expecter: true
+      recursive: false
+      inpackage: false
+      filename: "{{.InterfaceName}}.go"
+      dir: "internal/{{.PackageName}}/mocks"
+      mockname: "{{.InterfaceName}}"
+      outpkg: "mocks"
+    interfaces:
+      TokenManager:
+      Database:
+      Repository:
+      GeneratorService:

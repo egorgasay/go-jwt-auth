@@ -10,4 +10,6 @@ var (
 	ErrExpired       = fmt.Errorf("token expired")
 	ErrInvalidGUID   = fmt.Errorf("invalid guid")
 	ErrCantHashToken = fmt.Errorf("can't hash token")
+	ErrGenerate      = fmt.Errorf("can't generate")
+	ErrRepository    = fmt.Errorf("repository error")
 )
