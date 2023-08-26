@@ -12,7 +12,7 @@ func HTTPError(c *gin.Context, err error) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"error": err.Error(),
 		})
-	case constants.ErrExpired:
+	case constants.ErrTokenExpired:
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"error": err.Error(),
 		})
@@ -20,7 +20,7 @@ func HTTPError(c *gin.Context, err error) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
-	case constants.ErrSign, constants.ErrGenerateUUID, constants.ErrCantHashToken:
+	case constants.ErrSignToken, constants.ErrGenerateUUID, constants.ErrCantHashToken:
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})

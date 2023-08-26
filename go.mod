@@ -13,6 +13,7 @@ require (
 	go.uber.org/fx v1.20.0
 	go.uber.org/zap v1.25.0
 	golang.org/x/crypto v0.9.0
+	gotest.tools/v3 v3.4.0
 )
 
 require (
@@ -33,6 +34,7 @@ require (
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
+	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect

@@ -238,6 +238,23 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			},
 		},
 		{
+			name: "expired",
+			args: args{
+				ctx:  context.Background(),
+				guid: "ZmtiaHEzNGJ0eXUxZzR5dWcxM3Vy",
+			},
+			genMock: func(c *mocks.GeneratorService) {
+			},
+			repoMock: func(c *mocks.Repository) {
+				c.On("GetRefTokenAndGUID", _contextType, _stringType).
+					Return("fkbhq34btyu1g4yug13ur", models.RefreshToken{
+						RefreshTokenBCrypt: "xxx",
+						Exp:                time.Now().Add(-refreshTTL).Unix(),
+					}, nil)
+			},
+			wantErr: constants.ErrTokenExpired,
+		},
+		{
 			name: "base64Error",
 			args: args{
 				ctx:  context.Background(),

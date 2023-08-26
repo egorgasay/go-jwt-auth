@@ -26,6 +26,7 @@ func (g *GeneratorService) RefreshToken(ctx context.Context, refreshTTL time.Dur
 	if ctx.Err() != nil {
 		return "", 0, ctx.Err()
 	}
+
 	uuidObj, err := uuid.NewUUID()
 	if err != nil {
 		g.logger.Error("can't generate uuid for refresh token", zap.Error(err))
@@ -40,7 +41,7 @@ func (g *GeneratorService) AccessToken(
 	ctx context.Context,
 	guid string, key []byte,
 	accessTTL time.Duration,
-) (string, int64, error) {
+) (access string, exp int64, err error) {
 
 	if ctx.Err() != nil {
 		return "", 0, ctx.Err()
@@ -50,7 +51,7 @@ func (g *GeneratorService) AccessToken(
 		return "", 0, constants.ErrInvalidGUID
 	}
 
-	exp := time.Now().Add(accessTTL).Unix()
+	exp = time.Now().Add(accessTTL).Unix()
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS512,
 		jwt.MapClaims{
@@ -58,10 +59,10 @@ func (g *GeneratorService) AccessToken(
 			_exp:  exp,
 		})
 
-	access, err := t.SignedString(key)
+	access, err = t.SignedString(key)
 	if err != nil {
 		g.logger.Error("can't sign token", zap.Error(err))
-		return "", exp, constants.ErrSign
+		return "", exp, constants.ErrSignToken
 	}
 
 	return access, exp, nil

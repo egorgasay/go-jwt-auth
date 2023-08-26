@@ -125,7 +125,7 @@ func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefreshB64 string)
 
 	if refToken.Exp < time.Now().Unix() {
 		tm.logger.Error("refresh token expired")
-		return "", "", constants.ErrExpired
+		return "", "", constants.ErrTokenExpired
 	}
 
 	return tm.GetTokens(ctx, guid)
