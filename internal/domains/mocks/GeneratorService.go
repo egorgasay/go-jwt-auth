@@ -24,7 +24,7 @@ func (_m *GeneratorService) EXPECT() *GeneratorService_Expecter {
 }
 
 // Access provides a mock function with given fields: ctx, guid, key, accessTTL
-func (_m *GeneratorService) Access(ctx context.Context, guid string, key []byte, accessTTL time.Duration) (string, int64, error) {
+func (_m *GeneratorService) AccessToken(ctx context.Context, guid string, key []byte, accessTTL time.Duration) (string, int64, error) {
 	ret := _m.Called(ctx, guid, key, accessTTL)
 
 	var r0 string
@@ -54,7 +54,7 @@ func (_m *GeneratorService) Access(ctx context.Context, guid string, key []byte,
 	return r0, r1, r2
 }
 
-// GeneratorService_Access_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Access'
+// GeneratorService_Access_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AccessToken'
 type GeneratorService_Access_Call struct {
 	*mock.Call
 }
@@ -65,7 +65,7 @@ type GeneratorService_Access_Call struct {
 //   - key []byte
 //   - accessTTL time.Duration
 func (_e *GeneratorService_Expecter) Access(ctx interface{}, guid interface{}, key interface{}, accessTTL interface{}) *GeneratorService_Access_Call {
-	return &GeneratorService_Access_Call{Call: _e.mock.On("Access", ctx, guid, key, accessTTL)}
+	return &GeneratorService_Access_Call{Call: _e.mock.On("AccessToken", ctx, guid, key, accessTTL)}
 }
 
 func (_c *GeneratorService_Access_Call) Run(run func(ctx context.Context, guid string, key []byte, accessTTL time.Duration)) *GeneratorService_Access_Call {
@@ -86,7 +86,7 @@ func (_c *GeneratorService_Access_Call) RunAndReturn(run func(context.Context, s
 }
 
 // Refresh provides a mock function with given fields: ctx, refreshTTL
-func (_m *GeneratorService) Refresh(ctx context.Context, refreshTTL time.Duration) (string, int64, error) {
+func (_m *GeneratorService) RefreshToken(ctx context.Context, refreshTTL time.Duration) (string, int64, error) {
 	ret := _m.Called(ctx, refreshTTL)
 
 	var r0 string
@@ -116,7 +116,7 @@ func (_m *GeneratorService) Refresh(ctx context.Context, refreshTTL time.Duratio
 	return r0, r1, r2
 }
 
-// GeneratorService_Refresh_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Refresh'
+// GeneratorService_Refresh_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RefreshToken'
 type GeneratorService_Refresh_Call struct {
 	*mock.Call
 }
@@ -125,7 +125,7 @@ type GeneratorService_Refresh_Call struct {
 //   - ctx context.Context
 //   - refreshTTL time.Duration
 func (_e *GeneratorService_Expecter) Refresh(ctx interface{}, refreshTTL interface{}) *GeneratorService_Refresh_Call {
-	return &GeneratorService_Refresh_Call{Call: _e.mock.On("Refresh", ctx, refreshTTL)}
+	return &GeneratorService_Refresh_Call{Call: _e.mock.On("RefreshToken", ctx, refreshTTL)}
 }
 
 func (_c *GeneratorService_Refresh_Call) Run(run func(ctx context.Context, refreshTTL time.Duration)) *GeneratorService_Refresh_Call {

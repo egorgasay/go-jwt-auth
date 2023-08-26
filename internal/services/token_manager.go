@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"go-jwt-auth/internal/constants"
 	"go-jwt-auth/internal/domains"
 	"go-jwt-auth/internal/lib"
 	"go-jwt-auth/internal/models"
@@ -64,22 +65,22 @@ const (
 // refresh - the refresh token
 // err - any error that occurred during token generation
 func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access string, refresh string, err error) {
-	access, _, err = tm.generator.Access(ctx, guid, tm.key, tm.accessTTL)
+	access, _, err = tm.generator.AccessToken(ctx, guid, tm.key, tm.accessTTL)
 	if err != nil {
 		tm.logger.Error("can't generate access token", zap.Error(err))
-		return "", "", errors.Join(err, ErrGenerate)
+		return "", "", errors.Join(err, constants.ErrGenerate)
 	}
 
-	refresh, refreshExp, err := tm.generator.Refresh(ctx, tm.refreshTTL)
+	refresh, refreshExp, err := tm.generator.RefreshToken(ctx, tm.refreshTTL)
 	if err != nil {
 		tm.logger.Error("can't generate refresh token", zap.Error(err))
-		return "", "", errors.Join(err, ErrGenerate)
+		return "", "", errors.Join(err, constants.ErrGenerate)
 	}
 
-	bcryptHash, err := bcryptHashFrom(refresh)
+	bcryptHash, err := bcryptHashFrom([]byte(refresh))
 	if err != nil {
 		tm.logger.Error("can't hash refresh token", zap.Error(err))
-		return "", "", ErrCantHashToken
+		return "", "", constants.ErrCantHashToken
 	}
 
 	if err := tm.repository.SaveRefresh(ctx, guid, models.RefreshToken{
@@ -87,7 +88,7 @@ func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access stri
 		Exp:                refreshExp,
 	}); err != nil {
 		tm.logger.Error("can't save refresh token", zap.Error(err))
-		return "", "", errors.Join(err, ErrRepository)
+		return "", "", errors.Join(err, constants.ErrRepository)
 	}
 
 	refreshB64 := base64.StdEncoding.EncodeToString([]byte(refresh))
@@ -107,24 +108,24 @@ func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefreshB64 string)
 	oldRefreshBytes, err := base64.StdEncoding.DecodeString(oldRefreshB64)
 	if err != nil {
 		tm.logger.Error("can't decode refresh token", zap.Error(err))
-		return "", "", ErrInvalidToken
+		return "", "", constants.ErrInvalidToken
 	}
 
-	bcryptHash, err := bcryptHashFrom(string(oldRefreshBytes))
+	bcryptHash, err := bcryptHashFrom(oldRefreshBytes)
 	if err != nil {
 		tm.logger.Error("can't hash refresh token", zap.Error(err))
-		return "", "", ErrCantHashToken
+		return "", "", constants.ErrCantHashToken
 	}
 
 	guid, refToken, err := tm.repository.GetRefTokenAndGUID(ctx, bcryptHash)
 	if err != nil {
 		tm.logger.Error("can't get refresh token exp and id", zap.Error(err))
-		return "", "", ErrInvalidToken
+		return "", "", errors.Join(err, constants.ErrRepository)
 	}
 
 	if refToken.Exp < time.Now().Unix() {
 		tm.logger.Error("refresh token expired")
-		return "", "", ErrExpired
+		return "", "", constants.ErrExpired
 	}
 
 	return tm.GetTokens(ctx, guid)
