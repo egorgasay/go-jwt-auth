@@ -19,7 +19,7 @@ type (
 
 var (
 	_contextType = mock.AnythingOfType("context.backgroundCtx")
-	_rtokenType  = mock.AnythingOfType("models.RefreshToken")
+	_rtokenType  = mock.AnythingOfType("models.Token")
 	_stringType  = mock.AnythingOfType("string")
 )
 
@@ -52,13 +52,13 @@ func TestTokenManager_GetTokens(t *testing.T) {
 			wantAccess:  "123",
 			wantRefresh: "MTIz",
 			genMock: func(c *mocks.GeneratorService) {
-				c.On("AccessToken", _contextType, "123", []byte("123"), accessTTL).
+				c.On("JWTToken", _contextType, "123", []byte("123"), accessTTL).
 					Return("123", int64(123), nil)
-				c.On("RefreshToken", _contextType, refreshTTL).
+				c.On("Token", _contextType, refreshTTL).
 					Return("123", int64(123), nil)
 			},
 			repoMock: func(c *mocks.Repository) {
-				c.On("SaveRefresh", _contextType, "123", _rtokenType).
+				c.On("SaveToken", _contextType, "123", _rtokenType).
 					Return(nil)
 			},
 		},
@@ -71,13 +71,13 @@ func TestTokenManager_GetTokens(t *testing.T) {
 			wantAccess:  "11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h",
 			wantRefresh: "MTM0YnJpdTFnM3J5ZzEzcnkxM3l1cnYxdW92cg==",
 			genMock: func(c *mocks.GeneratorService) {
-				c.On("AccessToken", _contextType, "fkbhq34btyu1g4yug13ur", []byte("123"), accessTTL).
+				c.On("JWTToken", _contextType, "fkbhq34btyu1g4yug13ur", []byte("123"), accessTTL).
 					Return("11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h", int64(345542514), nil)
-				c.On("RefreshToken", _contextType, refreshTTL).
+				c.On("Token", _contextType, refreshTTL).
 					Return("134briu1g3ryg13ry13yurv1uovr", int64(5243141), nil)
 			},
 			repoMock: func(c *mocks.Repository) {
-				c.On("SaveRefresh", _contextType, "fkbhq34btyu1g4yug13ur", _rtokenType).
+				c.On("SaveToken", _contextType, "fkbhq34btyu1g4yug13ur", _rtokenType).
 					Return(nil)
 			},
 		},
@@ -88,7 +88,7 @@ func TestTokenManager_GetTokens(t *testing.T) {
 				guid: "",
 			},
 			genMock: func(c *mocks.GeneratorService) {
-				c.On("AccessToken", _contextType, "", []byte("123"), accessTTL).
+				c.On("JWTToken", _contextType, "", []byte("123"), accessTTL).
 					Return("", int64(0), constants.ErrInvalidGUID)
 			},
 			repoMock: func(c *mocks.Repository) {
@@ -102,9 +102,9 @@ func TestTokenManager_GetTokens(t *testing.T) {
 				guid: "qkefkq",
 			},
 			genMock: func(c *mocks.GeneratorService) {
-				c.On("AccessToken", _contextType, "qkefkq", []byte("123"), accessTTL).
+				c.On("JWTToken", _contextType, "qkefkq", []byte("123"), accessTTL).
 					Return("11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h", int64(345542514), nil)
-				c.On("RefreshToken", _contextType, refreshTTL).
+				c.On("Token", _contextType, refreshTTL).
 					Return("", int64(0), constants.ErrGenerateUUID)
 			},
 			repoMock: func(c *mocks.Repository) {
@@ -118,13 +118,13 @@ func TestTokenManager_GetTokens(t *testing.T) {
 				guid: "kl21rlk",
 			},
 			genMock: func(c *mocks.GeneratorService) {
-				c.On("AccessToken", _contextType, "kl21rlk", []byte("123"), accessTTL).
+				c.On("JWTToken", _contextType, "kl21rlk", []byte("123"), accessTTL).
 					Return("11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h", int64(345542514), nil)
-				c.On("RefreshToken", _contextType, refreshTTL).
+				c.On("Token", _contextType, refreshTTL).
 					Return("134briu1g3ryg13ry13yurv1uovr", int64(5243141), nil)
 			},
 			repoMock: func(c *mocks.Repository) {
-				c.On("SaveRefresh", _contextType, "kl21rlk", _rtokenType).
+				c.On("SaveToken", _contextType, "kl21rlk", _rtokenType).
 					Return(errors.New("repoconstants.Error"))
 			},
 			wantErr: constants.ErrRepository,
@@ -196,19 +196,19 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			wantAccess:  "123",
 			wantRefresh: "MTIz",
 			genMock: func(c *mocks.GeneratorService) {
-				c.On("AccessToken", _contextType, "123", []byte("123"), accessTTL).
+				c.On("JWTToken", _contextType, "123", []byte("123"), accessTTL).
 					Return("123", int64(123), nil)
-				c.On("RefreshToken", _contextType, refreshTTL).
+				c.On("Token", _contextType, refreshTTL).
 					Return("123", int64(123), nil)
 			},
 			repoMock: func(c *mocks.Repository) {
 				c.On("GetRefTokenAndGUID", _contextType, _stringType).
-					Return("123", models.RefreshToken{
-						RefreshTokenBCrypt: "xxx",
-						Exp:                time.Now().Add(refreshTTL).Unix(),
+					Return("123", models.Token{
+						RefreshHash: "xxx",
+						RefreshExp:  time.Now().Add(refreshTTL).Unix(),
 					}, nil)
 
-				c.On("SaveRefresh", _contextType, "123", _rtokenType).
+				c.On("SaveToken", _contextType, "123", _rtokenType).
 					Return(nil)
 			},
 		},
@@ -221,19 +221,19 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			wantAccess:  "11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h",
 			wantRefresh: "MTM0YnJpdTFnM3J5ZzEzcnkxM3l1cnYxdW92cg==",
 			genMock: func(c *mocks.GeneratorService) {
-				c.On("AccessToken", _contextType, "fkbhq34btyu1g4yug13ur", []byte("123"), accessTTL).
+				c.On("JWTToken", _contextType, "fkbhq34btyu1g4yug13ur", []byte("123"), accessTTL).
 					Return("11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h", int64(345542514), nil)
-				c.On("RefreshToken", _contextType, refreshTTL).
+				c.On("Token", _contextType, refreshTTL).
 					Return("134briu1g3ryg13ry13yurv1uovr", int64(5243141), nil)
 			},
 			repoMock: func(c *mocks.Repository) {
 				c.On("GetRefTokenAndGUID", _contextType, _stringType).
-					Return("fkbhq34btyu1g4yug13ur", models.RefreshToken{
-						RefreshTokenBCrypt: "xxx",
-						Exp:                time.Now().Add(refreshTTL).Unix(),
+					Return("fkbhq34btyu1g4yug13ur", models.Token{
+						RefreshHash: "xxx",
+						RefreshExp:  time.Now().Add(refreshTTL).Unix(),
 					}, nil)
 
-				c.On("SaveRefresh", _contextType, "fkbhq34btyu1g4yug13ur", _rtokenType).
+				c.On("SaveToken", _contextType, "fkbhq34btyu1g4yug13ur", _rtokenType).
 					Return(nil)
 			},
 		},
@@ -247,9 +247,9 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			},
 			repoMock: func(c *mocks.Repository) {
 				c.On("GetRefTokenAndGUID", _contextType, _stringType).
-					Return("fkbhq34btyu1g4yug13ur", models.RefreshToken{
-						RefreshTokenBCrypt: "xxx",
-						Exp:                time.Now().Add(-refreshTTL).Unix(),
+					Return("fkbhq34btyu1g4yug13ur", models.Token{
+						RefreshHash: "xxx",
+						RefreshExp:  time.Now().Add(-refreshTTL).Unix(),
 					}, nil)
 			},
 			wantErr: constants.ErrTokenExpired,
@@ -277,7 +277,7 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			repoMock: func(c *mocks.Repository) {
 				c.On("GetRefTokenAndGUID", _contextType, _stringType).
 					Return("",
-						models.RefreshToken{}, errors.Join(constants.ErrNotFound, constants.ErrRepository))
+						models.Token{}, errors.Join(constants.ErrNotFound, constants.ErrRepository))
 			},
 			wantErr: constants.ErrNotFound,
 		},
@@ -291,7 +291,7 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			repoMock: func(c *mocks.Repository) {
 				c.On("GetRefTokenAndGUID", _contextType, _stringType).
 					Return("",
-						models.RefreshToken{}, constants.ErrRepository)
+						models.Token{}, constants.ErrRepository)
 			},
 			wantErr: constants.ErrRepository,
 		},

@@ -1,11 +1,12 @@
 package models
 
-type RefreshToken struct {
-	RefreshTokenBCrypt string `bson:"refresh_token_bcrypt"`
-	Exp                int64  `bson:"exp"`
+type Token struct {
+	RefreshHash string `bson:"refresh_hash"`
+	RefreshExp  int64  `bson:"refresh_exp"`
+	AccessExp   int64  `bson:"access_exp"`
 }
 
 type User struct {
-	GUID         string       `bson:"_id"`
-	RefreshToken RefreshToken `bson:"refresh_token"`
+	GUID  string `bson:"guid"`
+	Token Token  `bson:"refresh_token"`
 }

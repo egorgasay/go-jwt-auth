@@ -71,9 +71,9 @@ func TestGeneratorService_AccessToken(t *testing.T) {
 				logger: logger,
 			}
 			var got res
-			_, _, got.Err = g.AccessToken(tt.args.ctx, tt.args.guid, tt.args.key, tt.args.accessTTL)
+			_, _, got.Err = g.JWTToken(tt.args.ctx, tt.args.guid, tt.args.key, tt.args.accessTTL)
 			if !errors.Is(got.Err, tt.want.Err) {
-				t.Errorf("AccessToken() error = %v, wantErr %v", got.Err, tt.want.Err)
+				t.Errorf("JWTToken() error = %v, wantErr %v", got.Err, tt.want.Err)
 			}
 		})
 	}
@@ -125,7 +125,7 @@ func TestGeneratorService_RefreshToken(t *testing.T) {
 			var got res
 			_, _, got.Err = g.RefreshToken(tt.args.ctx, tt.args.refreshTTL)
 			if !errors.Is(got.Err, tt.want.Err) {
-				t.Errorf("AccessToken() error = %v, wantErr %v", got.Err, tt.want.Err)
+				t.Errorf("JWTToken() error = %v, wantErr %v", got.Err, tt.want.Err)
 			}
 		})
 	}

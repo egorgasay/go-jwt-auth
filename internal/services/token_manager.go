@@ -4,11 +4,14 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"github.com/golang-jwt/jwt/v5"
 	"go-jwt-auth/internal/constants"
 	"go-jwt-auth/internal/domains"
 	"go-jwt-auth/internal/lib"
 	"go-jwt-auth/internal/models"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
+	"strings"
 	"time"
 )
 
@@ -65,15 +68,15 @@ const (
 // refresh - the refresh token
 // err - any error that occurred during token generation
 func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access string, refresh string, err error) {
-	access, _, err = tm.generator.AccessToken(ctx, guid, tm.key, tm.accessTTL)
+	access, accessExp, err := tm.generator.JWTToken(ctx, guid, tm.key, tm.accessTTL)
 	if err != nil {
 		tm.logger.Error("can't generate access token", zap.Error(err))
 		return "", "", errors.Join(err, constants.ErrGenerate)
 	}
 
-	refresh, refreshExp, err := tm.generator.RefreshToken(ctx, tm.refreshTTL)
+	refresh, refreshExp, err := tm.generator.JWTToken(ctx, guid, tm.key, tm.refreshTTL)
 	if err != nil {
-		tm.logger.Error("can't generate refresh token", zap.Error(err))
+		tm.logger.Error("can't generate access token", zap.Error(err))
 		return "", "", errors.Join(err, constants.ErrGenerate)
 	}
 
@@ -83,12 +86,17 @@ func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access stri
 		return "", "", constants.ErrCantHashToken
 	}
 
-	if err := tm.repository.SaveRefresh(ctx, guid, models.RefreshToken{
-		RefreshTokenBCrypt: bcryptHash,
-		Exp:                refreshExp,
+	if err := tm.repository.SaveToken(ctx, guid, models.Token{
+		RefreshHash: bcryptHash,
+		RefreshExp:  refreshExp,
+		AccessExp:   accessExp,
 	}); err != nil {
-		tm.logger.Error("can't save refresh token", zap.Error(err))
-		return "", "", errors.Join(err, constants.ErrRepository)
+		tm.logger.Error("can't save token", zap.Error(err))
+		if errors.Is(err, constants.ErrAlreadyExists) {
+			return "", "", constants.ErrAlreadyExists
+		}
+
+		return "", "", constants.ErrRepository
 	}
 
 	refreshB64 := base64.StdEncoding.EncodeToString([]byte(refresh))
@@ -105,28 +113,98 @@ func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access stri
 // err: any error that occurred during the token refresh.
 // Returns the new access token, the new refresh token, and an error if any.
 func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefreshB64 string) (access string, refresh string, err error) {
+	if oldRefreshB64 == "" {
+		return "", "", constants.ErrNoToken
+	}
+
 	oldRefreshBytes, err := base64.StdEncoding.DecodeString(oldRefreshB64)
 	if err != nil {
 		tm.logger.Error("can't decode refresh token", zap.Error(err))
 		return "", "", constants.ErrInvalidToken
 	}
 
-	bcryptHash, err := bcryptHashFrom(oldRefreshBytes)
+	guid, err := tm.guidFromRefresh(string(oldRefreshBytes))
 	if err != nil {
-		tm.logger.Error("can't hash refresh token", zap.Error(err))
-		return "", "", constants.ErrCantHashToken
+		return "", "", err
 	}
 
-	guid, refToken, err := tm.repository.GetRefTokenAndGUID(ctx, bcryptHash)
+	token, err := tm.repository.GetRefTokenByGUID(ctx, guid)
 	if err != nil {
-		tm.logger.Error("can't get refresh token exp and id", zap.Error(err))
-		return "", "", errors.Join(err, constants.ErrRepository)
+		tm.logger.Debug("can't get token by guid", zap.Error(err))
+		if errors.Is(err, constants.ErrNotFound) {
+			return "", "", constants.ErrNotFound
+		}
+		return "", "", err
 	}
 
-	if refToken.Exp < time.Now().Unix() {
-		tm.logger.Error("refresh token expired")
+	if token.RefreshHash == "" {
+		return "", "", constants.ErrTokenExpired // TODO: ??
+	}
+
+	if err := validateTokenHash(token.RefreshHash, oldRefreshBytes); err != nil {
+		return "", "", err
+	}
+
+	if token.RefreshExp < time.Now().Unix() {
+		tm.logger.Debug("refresh token expired")
 		return "", "", constants.ErrTokenExpired
 	}
 
 	return tm.GetTokens(ctx, guid)
+}
+
+func validateTokenHash(hash string, incoming []byte) error {
+	hashParts := strings.Split(hash, " ")
+	incomingPartsLen := len(incoming) / constants.MaxBcryptLength
+	if len(hashParts) != incomingPartsLen && incomingPartsLen+1 != len(hashParts) {
+		return constants.ErrInvalidToken
+	}
+
+	last := len(incoming) > constants.MaxBcryptLength
+	for i := 0; len(incoming) > constants.MaxBcryptLength; i++ {
+		err := bcrypt.CompareHashAndPassword([]byte(hashParts[i]), incoming[:constants.MaxBcryptLength])
+		if err != nil {
+			return err
+		}
+
+		if len(incoming) > constants.MaxBcryptLength {
+			incoming = incoming[constants.MaxBcryptLength:]
+		} else if last {
+			break
+		} else {
+			last = true
+		}
+	}
+
+	return nil
+}
+
+func (tm *TokenManager) guidFromRefresh(refresh string) (string, error) {
+	t, err := jwt.Parse(refresh, func(token *jwt.Token) (interface{}, error) {
+		return tm.key, nil
+	})
+	if err != nil {
+		tm.logger.Debug("can't parse refresh token", zap.Error(err))
+		return "", constants.ErrInvalidToken
+	}
+
+	claims, ok := t.Claims.(jwt.MapClaims)
+	if !ok {
+		tm.logger.Error("can't extract claims from refresh token", zap.Error(err))
+		return "", constants.ErrInvalidToken
+	}
+
+	guid, ok := claims[_guid]
+	if !ok {
+		tm.logger.Error("can't extract guid from refresh token", zap.Error(err))
+		return "", constants.ErrInvalidToken
+	}
+
+	guidStr, ok := guid.(string)
+	if !ok {
+		tm.logger.Error("can't convert guid to string", zap.Error(err))
+		return "", constants.ErrInvalidToken
+	}
+
+	return guidStr, nil
 }

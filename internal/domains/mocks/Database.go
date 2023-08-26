@@ -24,13 +24,13 @@ func (_m *Database) EXPECT() *Database_Expecter {
 }
 
 // GetRefTokenAndGUID provides a mock function with given fields: ctx, refresh
-func (_m *Database) GetRefTokenAndGUID(ctx context.Context, refresh string) (string, models.RefreshToken, error) {
+func (_m *Database) GetRefTokenAndGUID(ctx context.Context, refresh string) (string, models.Token, error) {
 	ret := _m.Called(ctx, refresh)
 
 	var r0 string
-	var r1 models.RefreshToken
+	var r1 models.Token
 	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (string, models.RefreshToken, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (string, models.Token, error)); ok {
 		return rf(ctx, refresh)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
@@ -39,10 +39,10 @@ func (_m *Database) GetRefTokenAndGUID(ctx context.Context, refresh string) (str
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) models.RefreshToken); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string) models.Token); ok {
 		r1 = rf(ctx, refresh)
 	} else {
-		r1 = ret.Get(1).(models.RefreshToken)
+		r1 = ret.Get(1).(models.Token)
 	}
 
 	if rf, ok := ret.Get(2).(func(context.Context, string) error); ok {
@@ -73,22 +73,22 @@ func (_c *Database_GetRefTokenAndGUID_Call) Run(run func(ctx context.Context, re
 	return _c
 }
 
-func (_c *Database_GetRefTokenAndGUID_Call) Return(guid string, rt models.RefreshToken, err error) *Database_GetRefTokenAndGUID_Call {
+func (_c *Database_GetRefTokenAndGUID_Call) Return(guid string, rt models.Token, err error) *Database_GetRefTokenAndGUID_Call {
 	_c.Call.Return(guid, rt, err)
 	return _c
 }
 
-func (_c *Database_GetRefTokenAndGUID_Call) RunAndReturn(run func(context.Context, string) (string, models.RefreshToken, error)) *Database_GetRefTokenAndGUID_Call {
+func (_c *Database_GetRefTokenAndGUID_Call) RunAndReturn(run func(context.Context, string) (string, models.Token, error)) *Database_GetRefTokenAndGUID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveRefresh provides a mock function with given fields: ctx, guid, refresh
-func (_m *Database) SaveRefresh(ctx context.Context, guid string, refresh models.RefreshToken) error {
+func (_m *Database) SaveRefresh(ctx context.Context, guid string, refresh models.Token) error {
 	ret := _m.Called(ctx, guid, refresh)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, models.RefreshToken) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, models.Token) error); ok {
 		r0 = rf(ctx, guid, refresh)
 	} else {
 		r0 = ret.Error(0)
@@ -97,7 +97,7 @@ func (_m *Database) SaveRefresh(ctx context.Context, guid string, refresh models
 	return r0
 }
 
-// Database_SaveRefresh_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SaveRefresh'
+// Database_SaveRefresh_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SaveToken'
 type Database_SaveRefresh_Call struct {
 	*mock.Call
 }
@@ -105,14 +105,14 @@ type Database_SaveRefresh_Call struct {
 // SaveRefresh is a helper method to define mock.On call
 //   - ctx context.Context
 //   - guid string
-//   - refresh models.RefreshToken
+//   - refresh models.Token
 func (_e *Database_Expecter) SaveRefresh(ctx interface{}, guid interface{}, refresh interface{}) *Database_SaveRefresh_Call {
-	return &Database_SaveRefresh_Call{Call: _e.mock.On("SaveRefresh", ctx, guid, refresh)}
+	return &Database_SaveRefresh_Call{Call: _e.mock.On("SaveToken", ctx, guid, refresh)}
 }
 
-func (_c *Database_SaveRefresh_Call) Run(run func(ctx context.Context, guid string, refresh models.RefreshToken)) *Database_SaveRefresh_Call {
+func (_c *Database_SaveRefresh_Call) Run(run func(ctx context.Context, guid string, refresh models.Token)) *Database_SaveRefresh_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(models.RefreshToken))
+		run(args[0].(context.Context), args[1].(string), args[2].(models.Token))
 	})
 	return _c
 }
@@ -122,7 +122,7 @@ func (_c *Database_SaveRefresh_Call) Return(_a0 error) *Database_SaveRefresh_Cal
 	return _c
 }
 
-func (_c *Database_SaveRefresh_Call) RunAndReturn(run func(context.Context, string, models.RefreshToken) error) *Database_SaveRefresh_Call {
+func (_c *Database_SaveRefresh_Call) RunAndReturn(run func(context.Context, string, models.Token) error) *Database_SaveRefresh_Call {
 	_c.Call.Return(run)
 	return _c
 }

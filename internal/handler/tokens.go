@@ -12,7 +12,7 @@ type TokenHandler struct {
 	logger lib.Logger
 }
 
-func NewTokensHandler(logger lib.Logger, service domains.TokenManager) TokenHandler {
+func NewTokenHandler(logger lib.Logger, service domains.TokenManager) TokenHandler {
 	return TokenHandler{
 		logger: logger,
 		tokens: service,

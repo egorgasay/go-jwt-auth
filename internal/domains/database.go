@@ -6,6 +6,6 @@ import (
 )
 
 type Database interface {
-	SaveRefresh(ctx context.Context, guid string, refresh models.RefreshToken) error
-	GetRefTokenAndGUID(ctx context.Context, refresh string) (guid string, rt models.RefreshToken, err error)
+	SaveToken(ctx context.Context, guid string, t models.Token) error
+	GetRefTokenByGUID(ctx context.Context, refresh string) (t models.Token, err error)
 }

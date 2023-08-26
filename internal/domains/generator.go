@@ -6,6 +6,5 @@ import (
 )
 
 type GeneratorService interface {
-	AccessToken(ctx context.Context, guid string, key []byte, accessTTL time.Duration) (string, int64, error)
-	RefreshToken(ctx context.Context, refreshTTL time.Duration) (string, int64, error)
+	JWTToken(ctx context.Context, guid string, key []byte, ttl time.Duration) (token string, exp int64, err error)
 }

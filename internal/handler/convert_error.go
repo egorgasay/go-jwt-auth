@@ -16,7 +16,7 @@ func HTTPError(c *gin.Context, err error) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"error": err.Error(),
 		})
-	case constants.ErrInvalidToken, constants.ErrInvalidGUID:
+	case constants.ErrInvalidToken, constants.ErrInvalidGUID, constants.ErrNotFound:
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
