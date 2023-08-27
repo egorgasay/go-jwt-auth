@@ -24,13 +24,13 @@ func (_m *Repository) EXPECT() *Repository_Expecter {
 }
 
 // GetRefTokenAndGUID provides a mock function with given fields: ctx, refresh
-func (_m *Repository) GetRefTokenAndGUID(ctx context.Context, refresh string) (string, models.Token, error) {
+func (_m *Repository) GetRefTokenAndGUID(ctx context.Context, refresh string) (string, models.TokenData, error) {
 	ret := _m.Called(ctx, refresh)
 
 	var r0 string
-	var r1 models.Token
+	var r1 models.TokenData
 	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (string, models.Token, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (string, models.TokenData, error)); ok {
 		return rf(ctx, refresh)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
@@ -39,10 +39,10 @@ func (_m *Repository) GetRefTokenAndGUID(ctx context.Context, refresh string) (s
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) models.Token); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string) models.TokenData); ok {
 		r1 = rf(ctx, refresh)
 	} else {
-		r1 = ret.Get(1).(models.Token)
+		r1 = ret.Get(1).(models.TokenData)
 	}
 
 	if rf, ok := ret.Get(2).(func(context.Context, string) error); ok {
@@ -73,22 +73,22 @@ func (_c *Repository_GetRefTokenAndGUID_Call) Run(run func(ctx context.Context, 
 	return _c
 }
 
-func (_c *Repository_GetRefTokenAndGUID_Call) Return(guid string, rt models.Token, err error) *Repository_GetRefTokenAndGUID_Call {
+func (_c *Repository_GetRefTokenAndGUID_Call) Return(guid string, rt models.TokenData, err error) *Repository_GetRefTokenAndGUID_Call {
 	_c.Call.Return(guid, rt, err)
 	return _c
 }
 
-func (_c *Repository_GetRefTokenAndGUID_Call) RunAndReturn(run func(context.Context, string) (string, models.Token, error)) *Repository_GetRefTokenAndGUID_Call {
+func (_c *Repository_GetRefTokenAndGUID_Call) RunAndReturn(run func(context.Context, string) (string, models.TokenData, error)) *Repository_GetRefTokenAndGUID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveRefresh provides a mock function with given fields: ctx, guid, refresh
-func (_m *Repository) SaveRefresh(ctx context.Context, guid string, refresh models.Token) error {
+func (_m *Repository) SaveRefresh(ctx context.Context, guid string, refresh models.TokenData) error {
 	ret := _m.Called(ctx, guid, refresh)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, models.Token) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, models.TokenData) error); ok {
 		r0 = rf(ctx, guid, refresh)
 	} else {
 		r0 = ret.Error(0)
@@ -105,14 +105,14 @@ type Repository_SaveRefresh_Call struct {
 // SaveRefresh is a helper method to define mock.On call
 //   - ctx context.Context
 //   - guid string
-//   - refresh models.Token
+//   - refresh models.TokenData
 func (_e *Repository_Expecter) SaveRefresh(ctx interface{}, guid interface{}, refresh interface{}) *Repository_SaveRefresh_Call {
 	return &Repository_SaveRefresh_Call{Call: _e.mock.On("SaveToken", ctx, guid, refresh)}
 }
 
-func (_c *Repository_SaveRefresh_Call) Run(run func(ctx context.Context, guid string, refresh models.Token)) *Repository_SaveRefresh_Call {
+func (_c *Repository_SaveRefresh_Call) Run(run func(ctx context.Context, guid string, refresh models.TokenData)) *Repository_SaveRefresh_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(models.Token))
+		run(args[0].(context.Context), args[1].(string), args[2].(models.TokenData))
 	})
 	return _c
 }
@@ -122,7 +122,7 @@ func (_c *Repository_SaveRefresh_Call) Return(_a0 error) *Repository_SaveRefresh
 	return _c
 }
 
-func (_c *Repository_SaveRefresh_Call) RunAndReturn(run func(context.Context, string, models.Token) error) *Repository_SaveRefresh_Call {
+func (_c *Repository_SaveRefresh_Call) RunAndReturn(run func(context.Context, string, models.TokenData) error) *Repository_SaveRefresh_Call {
 	_c.Call.Return(run)
 	return _c
 }

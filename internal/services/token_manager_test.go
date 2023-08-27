@@ -19,7 +19,7 @@ type (
 
 var (
 	_contextType = mock.AnythingOfType("context.backgroundCtx")
-	_rtokenType  = mock.AnythingOfType("models.Token")
+	_rtokenType  = mock.AnythingOfType("models.TokenData")
 	_stringType  = mock.AnythingOfType("string")
 )
 
@@ -54,7 +54,7 @@ func TestTokenManager_GetTokens(t *testing.T) {
 			genMock: func(c *mocks.GeneratorService) {
 				c.On("JWTToken", _contextType, "123", []byte("123"), accessTTL).
 					Return("123", int64(123), nil)
-				c.On("Token", _contextType, refreshTTL).
+				c.On("TokenData", _contextType, refreshTTL).
 					Return("123", int64(123), nil)
 			},
 			repoMock: func(c *mocks.Repository) {
@@ -73,7 +73,7 @@ func TestTokenManager_GetTokens(t *testing.T) {
 			genMock: func(c *mocks.GeneratorService) {
 				c.On("JWTToken", _contextType, "fkbhq34btyu1g4yug13ur", []byte("123"), accessTTL).
 					Return("11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h", int64(345542514), nil)
-				c.On("Token", _contextType, refreshTTL).
+				c.On("TokenData", _contextType, refreshTTL).
 					Return("134briu1g3ryg13ry13yurv1uovr", int64(5243141), nil)
 			},
 			repoMock: func(c *mocks.Repository) {
@@ -104,7 +104,7 @@ func TestTokenManager_GetTokens(t *testing.T) {
 			genMock: func(c *mocks.GeneratorService) {
 				c.On("JWTToken", _contextType, "qkefkq", []byte("123"), accessTTL).
 					Return("11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h", int64(345542514), nil)
-				c.On("Token", _contextType, refreshTTL).
+				c.On("TokenData", _contextType, refreshTTL).
 					Return("", int64(0), constants.ErrGenerateUUID)
 			},
 			repoMock: func(c *mocks.Repository) {
@@ -120,7 +120,7 @@ func TestTokenManager_GetTokens(t *testing.T) {
 			genMock: func(c *mocks.GeneratorService) {
 				c.On("JWTToken", _contextType, "kl21rlk", []byte("123"), accessTTL).
 					Return("11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h", int64(345542514), nil)
-				c.On("Token", _contextType, refreshTTL).
+				c.On("TokenData", _contextType, refreshTTL).
 					Return("134briu1g3ryg13ry13yurv1uovr", int64(5243141), nil)
 			},
 			repoMock: func(c *mocks.Repository) {
@@ -198,12 +198,12 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			genMock: func(c *mocks.GeneratorService) {
 				c.On("JWTToken", _contextType, "123", []byte("123"), accessTTL).
 					Return("123", int64(123), nil)
-				c.On("Token", _contextType, refreshTTL).
+				c.On("TokenData", _contextType, refreshTTL).
 					Return("123", int64(123), nil)
 			},
 			repoMock: func(c *mocks.Repository) {
 				c.On("GetRefTokenAndGUID", _contextType, _stringType).
-					Return("123", models.Token{
+					Return("123", models.TokenData{
 						RefreshHash: "xxx",
 						RefreshExp:  time.Now().Add(refreshTTL).Unix(),
 					}, nil)
@@ -223,12 +223,12 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			genMock: func(c *mocks.GeneratorService) {
 				c.On("JWTToken", _contextType, "fkbhq34btyu1g4yug13ur", []byte("123"), accessTTL).
 					Return("11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h", int64(345542514), nil)
-				c.On("Token", _contextType, refreshTTL).
+				c.On("TokenData", _contextType, refreshTTL).
 					Return("134briu1g3ryg13ry13yurv1uovr", int64(5243141), nil)
 			},
 			repoMock: func(c *mocks.Repository) {
 				c.On("GetRefTokenAndGUID", _contextType, _stringType).
-					Return("fkbhq34btyu1g4yug13ur", models.Token{
+					Return("fkbhq34btyu1g4yug13ur", models.TokenData{
 						RefreshHash: "xxx",
 						RefreshExp:  time.Now().Add(refreshTTL).Unix(),
 					}, nil)
@@ -247,7 +247,7 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			},
 			repoMock: func(c *mocks.Repository) {
 				c.On("GetRefTokenAndGUID", _contextType, _stringType).
-					Return("fkbhq34btyu1g4yug13ur", models.Token{
+					Return("fkbhq34btyu1g4yug13ur", models.TokenData{
 						RefreshHash: "xxx",
 						RefreshExp:  time.Now().Add(-refreshTTL).Unix(),
 					}, nil)
@@ -277,7 +277,7 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			repoMock: func(c *mocks.Repository) {
 				c.On("GetRefTokenAndGUID", _contextType, _stringType).
 					Return("",
-						models.Token{}, errors.Join(constants.ErrNotFound, constants.ErrRepository))
+						models.TokenData{}, errors.Join(constants.ErrNotFound, constants.ErrRepository))
 			},
 			wantErr: constants.ErrNotFound,
 		},
@@ -291,7 +291,7 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 			repoMock: func(c *mocks.Repository) {
 				c.On("GetRefTokenAndGUID", _contextType, _stringType).
 					Return("",
-						models.Token{}, constants.ErrRepository)
+						models.TokenData{}, constants.ErrRepository)
 			},
 			wantErr: constants.ErrRepository,
 		},

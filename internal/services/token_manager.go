@@ -86,7 +86,8 @@ func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access stri
 		return "", "", constants.ErrCantHashToken
 	}
 
-	if err := tm.repository.SaveToken(ctx, guid, models.Token{
+	if err := tm.repository.SaveToken(ctx, models.TokenData{
+		GUID:        guid,
 		RefreshHash: bcryptHash,
 		RefreshExp:  refreshExp,
 		AccessExp:   accessExp,
@@ -128,7 +129,7 @@ func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefreshB64 string)
 		return "", "", err
 	}
 
-	token, err := tm.repository.GetRefTokenByGUID(ctx, guid)
+	userTokens, err := tm.repository.GetTokensDataByGUID(ctx, guid)
 	if err != nil {
 		tm.logger.Debug("can't get token by guid", zap.Error(err))
 		if errors.Is(err, constants.ErrNotFound) {
@@ -137,17 +138,26 @@ func (tm *TokenManager) RefreshTokens(ctx context.Context, oldRefreshB64 string)
 		return "", "", err
 	}
 
-	if token.RefreshHash == "" {
-		return "", "", constants.ErrTokenExpired // TODO: ??
+	for _, tokenData := range userTokens {
+		if err = validateTokenHash(tokenData.RefreshHash, oldRefreshBytes); err != nil {
+			continue
+		}
+
+		if tokenData.RefreshExp < time.Now().Unix() {
+			err = constants.ErrTokenExpired
+			continue
+		}
+
+		if err = tm.repository.DeleteTokenData(ctx, guid, tokenData.RefreshHash); err != nil {
+			tm.logger.Error("can't delete token", zap.Error(err))
+			return "", "", constants.ErrRepository
+		}
+		break
 	}
 
-	if err := validateTokenHash(token.RefreshHash, oldRefreshBytes); err != nil {
-		return "", "", err
-	}
-
-	if token.RefreshExp < time.Now().Unix() {
-		tm.logger.Debug("refresh token expired")
-		return "", "", constants.ErrTokenExpired
+	if err != nil {
+		tm.logger.Debug("can't validate token", zap.Error(err))
+		return "", "", constants.ErrInvalidToken
 	}
 
 	return tm.GetTokens(ctx, guid)
@@ -160,7 +170,7 @@ func validateTokenHash(hash string, incoming []byte) error {
 		return constants.ErrInvalidToken
 	}
 
-	last := len(incoming) > constants.MaxBcryptLength
+	last := len(incoming) <= constants.MaxBcryptLength
 	for i := 0; len(incoming) > constants.MaxBcryptLength; i++ {
 		err := bcrypt.CompareHashAndPassword([]byte(hashParts[i]), incoming[:constants.MaxBcryptLength])
 		if err != nil {

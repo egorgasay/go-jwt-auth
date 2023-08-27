@@ -1,6 +1,6 @@
 {
   "storage": {
-    "dsn": "AUTO_UP"
+    "dsn": "mongodb+srv://admin:admin@cluster0.du1amqp.mongodb.net/?retryWrites=true&w=majority"
   },
   "jwt": {
     "key": "secret",

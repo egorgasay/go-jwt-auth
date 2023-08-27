@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	_user               = "user"
-	_refreshTokenBcrypt = "token.refresh_hash"
-	_guid               = "guid"
+	_refreshHash = "refresh_hash"
+	_tokens      = "tokens"
+	_guid        = "guid"
 )
 
 // Database is a struct that contains a database.
@@ -37,12 +37,12 @@ func (d Database) Close() error {
 	return nil
 }
 
-// SaveRefresh saves a refresh token to the database.
-func (d Database) SaveToken(ctx context.Context, guid string, t models.Token) error {
-	if _, err := d.db.Collection(_user).InsertOne(ctx, models.User{
-		GUID:  guid,
-		Token: t,
-	}); err != nil {
+// SaveToken saves a token.
+func (d Database) SaveToken(ctx context.Context, t models.TokenData) error {
+	opts := &options.ReplaceOptions{}
+	opts.SetUpsert(true)
+	filter := bson.D{{_guid, t.GUID}, {_refreshHash, ""}}
+	if _, err := d.db.Collection(_tokens).ReplaceOne(ctx, filter, t, opts); err != nil {
 		if mongo.IsDuplicateKeyError(err) {
 			return constants.ErrAlreadyExists
 		}
@@ -52,14 +52,10 @@ func (d Database) SaveToken(ctx context.Context, guid string, t models.Token) er
 	return nil
 }
 
-// GetRefTokenByGUID retrieves a refresh token from the database.
-func (d Database) GetRefTokenByGUID(ctx context.Context, guid string) (t models.Token, err error) {
-	var us models.User
+// GetTokensDataByGUID retrieves the access and refresh tokens for a given GUID.
+func (d Database) GetTokensDataByGUID(ctx context.Context, guid string) (t []models.TokenData, err error) {
 	filter := bson.D{{_guid, guid}}
-	opts := options.FindOneAndUpdate().SetUpsert(false)
-	update := bson.D{{"$set", bson.D{{_refreshTokenBcrypt, ""}}}}
-	err = d.db.Collection(_user).FindOneAndUpdate(ctx, filter, update, opts).
-		Decode(&us)
+	cur, err := d.db.Collection(_tokens).Find(ctx, filter)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return t, constants.ErrNotFound
@@ -67,6 +63,32 @@ func (d Database) GetRefTokenByGUID(ctx context.Context, guid string) (t models.
 
 		return t, err
 	}
+	defer func(cur *mongo.Cursor, ctx context.Context) {
+		err = cur.Close(ctx)
+	}(cur, ctx)
 
-	return us.Token, nil
+	for cur.Next(ctx) {
+		var td models.TokenData
+		err := cur.Decode(&td)
+		if err != nil {
+			return t, err
+		}
+		t = append(t, td)
+	}
+
+	return t, nil
+}
+
+// DeleteTokenData deletes a token.
+func (d Database) DeleteTokenData(ctx context.Context, guid, hash string) error {
+	filter := bson.D{{_guid, guid}, {_refreshHash, hash}}
+	_, err := d.db.Collection(_tokens).DeleteOne(ctx, filter)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return constants.ErrNotFound
+		}
+		return err
+	}
+
+	return nil
 }
