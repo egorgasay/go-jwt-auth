@@ -112,7 +112,7 @@ components:
         - refresh
       properties:
         refresh:
-          description: Refresh token
+          description: Base64 encoded Refresh token
           type: string
           format: string
           example: 'ODcxYTY2Y2EtM2Y2Yi0xMWVlLTlkNTEtMDBmZjkwMDEyY2Ix'
@@ -140,7 +140,7 @@ components:
 
     AccessToken:
       in: header
-      description: Access token
+      description: Base64 encoded Access token
       name: Authorization
       required: true
       schema:
