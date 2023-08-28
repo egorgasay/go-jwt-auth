@@ -141,7 +141,7 @@ components:
     AccessToken:
       in: header
       description: Access token
-      name: access_token
+      name: Authorization
       required: true
       schema:
         type: string

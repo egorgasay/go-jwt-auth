@@ -23,73 +23,13 @@ func (_m *Database) EXPECT() *Database_Expecter {
 	return &Database_Expecter{mock: &_m.Mock}
 }
 
-// GetRefTokenAndGUID provides a mock function with given fields: ctx, refresh
-func (_m *Database) GetRefTokenAndGUID(ctx context.Context, refresh string) (string, models.TokenData, error) {
-	ret := _m.Called(ctx, refresh)
-
-	var r0 string
-	var r1 models.TokenData
-	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (string, models.TokenData, error)); ok {
-		return rf(ctx, refresh)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
-		r0 = rf(ctx, refresh)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, string) models.TokenData); ok {
-		r1 = rf(ctx, refresh)
-	} else {
-		r1 = ret.Get(1).(models.TokenData)
-	}
-
-	if rf, ok := ret.Get(2).(func(context.Context, string) error); ok {
-		r2 = rf(ctx, refresh)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
-}
-
-// Database_GetRefTokenAndGUID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRefTokenAndGUID'
-type Database_GetRefTokenAndGUID_Call struct {
-	*mock.Call
-}
-
-// GetRefTokenAndGUID is a helper method to define mock.On call
-//   - ctx context.Context
-//   - refresh string
-func (_e *Database_Expecter) GetRefTokenAndGUID(ctx interface{}, refresh interface{}) *Database_GetRefTokenAndGUID_Call {
-	return &Database_GetRefTokenAndGUID_Call{Call: _e.mock.On("GetRefTokenAndGUID", ctx, refresh)}
-}
-
-func (_c *Database_GetRefTokenAndGUID_Call) Run(run func(ctx context.Context, refresh string)) *Database_GetRefTokenAndGUID_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
-	})
-	return _c
-}
-
-func (_c *Database_GetRefTokenAndGUID_Call) Return(guid string, rt models.TokenData, err error) *Database_GetRefTokenAndGUID_Call {
-	_c.Call.Return(guid, rt, err)
-	return _c
-}
-
-func (_c *Database_GetRefTokenAndGUID_Call) RunAndReturn(run func(context.Context, string) (string, models.TokenData, error)) *Database_GetRefTokenAndGUID_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// SaveRefresh provides a mock function with given fields: ctx, guid, refresh
-func (_m *Database) SaveRefresh(ctx context.Context, guid string, refresh models.TokenData) error {
-	ret := _m.Called(ctx, guid, refresh)
+// DeleteTokenData provides a mock function with given fields: ctx, guid, hash
+func (_m *Database) DeleteTokenData(ctx context.Context, guid string, hash string) error {
+	ret := _m.Called(ctx, guid, hash)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, models.TokenData) error); ok {
-		r0 = rf(ctx, guid, refresh)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, guid, hash)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -97,32 +37,130 @@ func (_m *Database) SaveRefresh(ctx context.Context, guid string, refresh models
 	return r0
 }
 
-// Database_SaveRefresh_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SaveToken'
-type Database_SaveRefresh_Call struct {
+// Database_DeleteTokenData_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteTokenData'
+type Database_DeleteTokenData_Call struct {
 	*mock.Call
 }
 
-// SaveRefresh is a helper method to define mock.On call
+// DeleteTokenData is a helper method to define mock.On call
 //   - ctx context.Context
 //   - guid string
-//   - refresh models.TokenData
-func (_e *Database_Expecter) SaveRefresh(ctx interface{}, guid interface{}, refresh interface{}) *Database_SaveRefresh_Call {
-	return &Database_SaveRefresh_Call{Call: _e.mock.On("SaveToken", ctx, guid, refresh)}
+//   - hash string
+func (_e *Database_Expecter) DeleteTokenData(ctx interface{}, guid interface{}, hash interface{}) *Database_DeleteTokenData_Call {
+	return &Database_DeleteTokenData_Call{Call: _e.mock.On("DeleteTokenData", ctx, guid, hash)}
 }
 
-func (_c *Database_SaveRefresh_Call) Run(run func(ctx context.Context, guid string, refresh models.TokenData)) *Database_SaveRefresh_Call {
+func (_c *Database_DeleteTokenData_Call) Run(run func(ctx context.Context, guid string, hash string)) *Database_DeleteTokenData_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(models.TokenData))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
 
-func (_c *Database_SaveRefresh_Call) Return(_a0 error) *Database_SaveRefresh_Call {
+func (_c *Database_DeleteTokenData_Call) Return(_a0 error) *Database_DeleteTokenData_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *Database_SaveRefresh_Call) RunAndReturn(run func(context.Context, string, models.TokenData) error) *Database_SaveRefresh_Call {
+func (_c *Database_DeleteTokenData_Call) RunAndReturn(run func(context.Context, string, string) error) *Database_DeleteTokenData_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetTokensDataByGUID provides a mock function with given fields: ctx, guid
+func (_m *Database) GetTokensDataByGUID(ctx context.Context, guid string) ([]models.TokenData, error) {
+	ret := _m.Called(ctx, guid)
+
+	var r0 []models.TokenData
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]models.TokenData, error)); ok {
+		return rf(ctx, guid)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) []models.TokenData); ok {
+		r0 = rf(ctx, guid)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.TokenData)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, guid)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Database_GetTokensDataByGUID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetTokensDataByGUID'
+type Database_GetTokensDataByGUID_Call struct {
+	*mock.Call
+}
+
+// GetTokensDataByGUID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - guid string
+func (_e *Database_Expecter) GetTokensDataByGUID(ctx interface{}, guid interface{}) *Database_GetTokensDataByGUID_Call {
+	return &Database_GetTokensDataByGUID_Call{Call: _e.mock.On("GetTokensDataByGUID", ctx, guid)}
+}
+
+func (_c *Database_GetTokensDataByGUID_Call) Run(run func(ctx context.Context, guid string)) *Database_GetTokensDataByGUID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *Database_GetTokensDataByGUID_Call) Return(t []models.TokenData, err error) *Database_GetTokensDataByGUID_Call {
+	_c.Call.Return(t, err)
+	return _c
+}
+
+func (_c *Database_GetTokensDataByGUID_Call) RunAndReturn(run func(context.Context, string) ([]models.TokenData, error)) *Database_GetTokensDataByGUID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SaveToken provides a mock function with given fields: ctx, t
+func (_m *Database) SaveToken(ctx context.Context, t models.TokenData) error {
+	ret := _m.Called(ctx, t)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, models.TokenData) error); ok {
+		r0 = rf(ctx, t)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Database_SaveToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SaveToken'
+type Database_SaveToken_Call struct {
+	*mock.Call
+}
+
+// SaveToken is a helper method to define mock.On call
+//   - ctx context.Context
+//   - t models.TokenData
+func (_e *Database_Expecter) SaveToken(ctx interface{}, t interface{}) *Database_SaveToken_Call {
+	return &Database_SaveToken_Call{Call: _e.mock.On("SaveToken", ctx, t)}
+}
+
+func (_c *Database_SaveToken_Call) Run(run func(ctx context.Context, t models.TokenData)) *Database_SaveToken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(models.TokenData))
+	})
+	return _c
+}
+
+func (_c *Database_SaveToken_Call) Return(_a0 error) *Database_SaveToken_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Database_SaveToken_Call) RunAndReturn(run func(context.Context, models.TokenData) error) *Database_SaveToken_Call {
 	_c.Call.Return(run)
 	return _c
 }

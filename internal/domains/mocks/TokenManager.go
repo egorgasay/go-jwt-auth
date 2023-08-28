@@ -81,30 +81,30 @@ func (_c *TokenManager_GetTokens_Call) RunAndReturn(run func(context.Context, st
 	return _c
 }
 
-// RefreshTokens provides a mock function with given fields: ctx, refresh
-func (_m *TokenManager) RefreshTokens(ctx context.Context, refresh string) (string, string, error) {
-	ret := _m.Called(ctx, refresh)
+// RefreshTokens provides a mock function with given fields: ctx, access, refresh
+func (_m *TokenManager) RefreshTokens(ctx context.Context, access string, refresh string) (string, string, error) {
+	ret := _m.Called(ctx, access, refresh)
 
 	var r0 string
 	var r1 string
 	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (string, string, error)); ok {
-		return rf(ctx, refresh)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (string, string, error)); ok {
+		return rf(ctx, access, refresh)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
-		r0 = rf(ctx, refresh)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) string); ok {
+		r0 = rf(ctx, access, refresh)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) string); ok {
-		r1 = rf(ctx, refresh)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) string); ok {
+		r1 = rf(ctx, access, refresh)
 	} else {
 		r1 = ret.Get(1).(string)
 	}
 
-	if rf, ok := ret.Get(2).(func(context.Context, string) error); ok {
-		r2 = rf(ctx, refresh)
+	if rf, ok := ret.Get(2).(func(context.Context, string, string) error); ok {
+		r2 = rf(ctx, access, refresh)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -119,14 +119,15 @@ type TokenManager_RefreshTokens_Call struct {
 
 // RefreshTokens is a helper method to define mock.On call
 //   - ctx context.Context
+//   - access string
 //   - refresh string
-func (_e *TokenManager_Expecter) RefreshTokens(ctx interface{}, refresh interface{}) *TokenManager_RefreshTokens_Call {
-	return &TokenManager_RefreshTokens_Call{Call: _e.mock.On("RefreshTokens", ctx, refresh)}
+func (_e *TokenManager_Expecter) RefreshTokens(ctx interface{}, access interface{}, refresh interface{}) *TokenManager_RefreshTokens_Call {
+	return &TokenManager_RefreshTokens_Call{Call: _e.mock.On("RefreshTokens", ctx, access, refresh)}
 }
 
-func (_c *TokenManager_RefreshTokens_Call) Run(run func(ctx context.Context, refresh string)) *TokenManager_RefreshTokens_Call {
+func (_c *TokenManager_RefreshTokens_Call) Run(run func(ctx context.Context, access string, refresh string)) *TokenManager_RefreshTokens_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -136,7 +137,7 @@ func (_c *TokenManager_RefreshTokens_Call) Return(_a0 string, _a1 string, _a2 er
 	return _c
 }
 
-func (_c *TokenManager_RefreshTokens_Call) RunAndReturn(run func(context.Context, string) (string, string, error)) *TokenManager_RefreshTokens_Call {
+func (_c *TokenManager_RefreshTokens_Call) RunAndReturn(run func(context.Context, string, string) (string, string, error)) *TokenManager_RefreshTokens_Call {
 	_c.Call.Return(run)
 	return _c
 }
