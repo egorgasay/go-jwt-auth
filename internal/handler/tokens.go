@@ -5,6 +5,7 @@ import (
 	"go-jwt-auth/internal/domains"
 	"go-jwt-auth/internal/lib"
 	"net/http"
+	"strings"
 )
 
 type TokenHandler struct {
@@ -35,9 +36,16 @@ func (h *TokenHandler) GetTokens(c *gin.Context) {
 }
 
 func (h *TokenHandler) RefreshTokens(c *gin.Context) {
-	refresh := c.DefaultQuery("rtoken", "")
+	access := c.Request.Header.Get("Authorization")
+	access = strings.TrimLeft(access, "Bearer ")
 
-	access, refresh, err := h.tokens.RefreshTokens(c, refresh)
+	rtr := &RefreshTokensRequest{}
+	if err := c.BindJSON(rtr); err != nil {
+		HTTPError(c, err)
+		return
+	}
+
+	access, refresh, err := h.tokens.RefreshTokens(c, access, rtr.RefreshToken)
 	if err != nil {
 		HTTPError(c, err)
 		return

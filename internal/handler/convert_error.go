@@ -8,7 +8,7 @@ import (
 
 func HTTPError(c *gin.Context, err error) {
 	switch err { // no errors.Is() because we get an explicit error from the service every time.
-	case constants.ErrNoToken:
+	case constants.ErrMissingRefreshToken, constants.ErrMissingAccessToken:
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"error": err.Error(),
 		})
@@ -20,7 +20,7 @@ func HTTPError(c *gin.Context, err error) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
-	case constants.ErrSignToken, constants.ErrGenerateUUID, constants.ErrCantHashToken:
+	case constants.ErrSignToken, constants.ErrGenerateToken, constants.ErrCantHashToken:
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})

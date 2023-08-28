@@ -40,7 +40,9 @@ paths:
         - Go JWT Auth API
       summary: Performs Refresh operation on a pair of Access, Refresh tokens.
       parameters:
-        - $ref: '#/components/parameters/GUID'
+        - $ref: '#/components/parameters/AccessToken'
+      requestBody:
+        $ref: '#/components/schemas/RefreshToken'
       responses:
         200:
           description: Access, Refresh tokens successfully refreshed.
@@ -104,6 +106,17 @@ components:
           format: string
           example: "bad request"
 
+    RefreshToken:
+      type: object
+      required:
+        - refresh
+      properties:
+        refresh:
+          description: Refresh token
+          type: string
+          format: string
+          example: 'ODcxYTY2Y2EtM2Y2Yi0xMWVlLTlkNTEtMDBmZjkwMDEyY2Ix'
+
   responses:
     ServerErrorResponse:
       description: Internal server error
@@ -124,3 +137,13 @@ components:
         type: string
         format: uuid
       example: 'qwdqfe12e1e14'
+
+    AccessToken:
+      in: header
+      description: Access token
+      name: access_token
+      required: true
+      schema:
+        type: string
+        format: string
+        example: 'Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTI1NDUwNTUsImd1aWQiOiJxZmVnZyJ9.MPsptOKHc-6qfbLsJcK-HC_yR_PMINTWIs7gzvARRZ9o7vPLvkzMc1WVmhnbJ8W2qSaoO9DcK9jt7p_OzmXWcw'

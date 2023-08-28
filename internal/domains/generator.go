@@ -2,9 +2,9 @@ package domains
 
 import (
 	"context"
-	"time"
 )
 
 type GeneratorService interface {
-	JWTToken(ctx context.Context, guid string, key []byte, ttl time.Duration) (token string, exp int64, err error)
+	AccessToken(ctx context.Context, guid string, key []byte) (token string, err error)
+	RefreshToken(ctx context.Context) (token string, err error)
 }

@@ -105,11 +105,11 @@ func TestTokenManager_GetTokens(t *testing.T) {
 				c.On("JWTToken", _contextType, "qkefkq", []byte("123"), accessTTL).
 					Return("11hg1f1f3v13rv1vf1hbu3rg13rjh11vkh1h", int64(345542514), nil)
 				c.On("TokenData", _contextType, refreshTTL).
-					Return("", int64(0), constants.ErrGenerateUUID)
+					Return("", int64(0), constants.ErrGenerateToken)
 			},
 			repoMock: func(c *mocks.Repository) {
 			},
-			wantErr: constants.ErrGenerateUUID,
+			wantErr: constants.ErrGenerateToken,
 		},
 		{
 			name: "RepoError",

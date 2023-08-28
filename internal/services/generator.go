@@ -1,15 +1,14 @@
 package services
 
 import (
-	"bytes"
 	"context"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"go-jwt-auth/internal/constants"
 	"go-jwt-auth/internal/domains"
 	"go-jwt-auth/internal/lib"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 type GeneratorService struct {
@@ -22,62 +21,59 @@ func NewGeneratorService(logger lib.Logger) domains.GeneratorService {
 	}
 }
 
-func (g *GeneratorService) JWTToken(
+func (g *GeneratorService) AccessToken(
 	ctx context.Context,
 	guid string, key []byte,
-	accessTTL time.Duration,
-) (access string, exp int64, err error) {
+) (access string, err error) {
 
 	if ctx.Err() != nil {
-		return "", 0, ctx.Err()
+		return "", ctx.Err()
 	}
 
 	if guid == "" {
-		return "", 0, constants.ErrInvalidGUID
+		return "", constants.ErrInvalidGUID
 	}
-
-	exp = time.Now().Add(accessTTL).Unix()
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS512,
 		jwt.MapClaims{
 			_guid: guid,
-			_exp:  exp,
 		})
 
 	access, err = t.SignedString(key)
 	if err != nil {
 		g.logger.Error("can't sign token", zap.Error(err))
-		return "", exp, constants.ErrSignToken
+		return "", constants.ErrSignToken
 	}
 
-	return access, exp, nil
+	return access, nil
+}
+
+func (g *GeneratorService) RefreshToken(
+	ctx context.Context,
+) (token string, err error) {
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
+
+	uuidObj, err := uuid.NewUUID()
+	if err != nil {
+		g.logger.Error("can't generate uuid", zap.Error(err))
+		return "", constants.ErrGenerateToken
+	}
+
+	return uuidObj.String(), nil
 }
 
 // bcryptHashFrom generates a bcrypt hash from a given token.
-func bcryptHashFrom(token []byte) (string, error) {
+func bcryptHashFrom(token []byte) ([]byte, error) {
 	if len(token) == 0 {
-		return "", constants.ErrInvalidToken
-	}
-	buf := bytes.Buffer{}
-	last := len(token) > constants.MaxBcryptLength
-
-	for len(token) > constants.MaxBcryptLength {
-		bcryptHash, err := bcrypt.GenerateFromPassword(token[:constants.MaxBcryptLength], bcrypt.DefaultCost)
-		if err != nil {
-			return "", err
-		}
-
-		buf.Write(bcryptHash)
-
-		if len(token) > constants.MaxBcryptLength {
-			token = token[constants.MaxBcryptLength:]
-		} else if last {
-			break
-		} else {
-			last = true
-		}
-		buf.WriteString(" ")
+		return nil, constants.ErrInvalidToken
 	}
 
-	return buf.String(), nil
+	bcryptHash, err := bcrypt.GenerateFromPassword(token, bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	return bcryptHash, nil
 }
