@@ -59,7 +59,7 @@ func TestTokenManager_GetTokens(t *testing.T) {
 					Return("123", nil)
 			},
 			repoMock: func(c *mocks.Repository) {
-				c.On("SaveToken", _contextType, _rtokenType).
+				c.On("SaveTokenData", _contextType, _rtokenType).
 					Return(nil)
 			},
 		},
@@ -78,7 +78,7 @@ func TestTokenManager_GetTokens(t *testing.T) {
 					Return("134briu1g3ryg13ry13yurv1uovr", nil)
 			},
 			repoMock: func(c *mocks.Repository) {
-				c.On("SaveToken", _contextType, _rtokenType).
+				c.On("SaveTokenData", _contextType, _rtokenType).
 					Return(nil)
 			},
 		},
@@ -125,7 +125,7 @@ func TestTokenManager_GetTokens(t *testing.T) {
 					Return("134briu1g3ryg13ry13yurv1uovr", nil)
 			},
 			repoMock: func(c *mocks.Repository) {
-				c.On("SaveToken", _contextType, _rtokenType).
+				c.On("SaveTokenData", _contextType, _rtokenType).
 					Return(errors.New("repoconstants.Error"))
 			},
 			wantErr: constants.ErrRepository,
@@ -216,7 +216,7 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 					}, nil)
 				c.On("DeleteTokenData", _contextType, "ikj", "$2a$10$Rct7JqhZDVzFGdRgG0caZurIrkyUe893JhvB0.8eXO.CKOLGppEDy").
 					Return(nil)
-				c.On("SaveToken", _contextType, _rtokenType).
+				c.On("SaveTokenData", _contextType, _rtokenType).
 					Return(nil)
 			},
 		},
@@ -247,7 +247,7 @@ func TestTokenManager_RefreshTokens(t *testing.T) {
 					}, nil)
 				c.On("DeleteTokenData", _contextType, "kwfwe", "$2a$10$VEjOdbltCL7QRByQ1g//4e4KseOMXwvEziIMv2ULi0/8vIuY0394S").
 					Return(nil)
-				c.On("SaveToken", _contextType, _rtokenType).
+				c.On("SaveTokenData", _contextType, _rtokenType).
 					Return(nil)
 			},
 		},

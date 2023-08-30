@@ -86,8 +86,7 @@ func TestGeneratorService_RefreshToken(t *testing.T) {
 		Err    error
 	}
 	type args struct {
-		ctx        context.Context
-		refreshTTL time.Duration
+		ctx context.Context
 	}
 	tests := []struct {
 		name string
@@ -97,16 +96,14 @@ func TestGeneratorService_RefreshToken(t *testing.T) {
 		{
 			name: "ok",
 			args: args{
-				ctx:        context.Background(),
-				refreshTTL: time.Minute,
+				ctx: context.Background(),
 			},
 			want: res{},
 		},
 		{
 			name: "ok#2",
 			args: args{
-				ctx:        context.Background(),
-				refreshTTL: time.Hour,
+				ctx: context.Background(),
 			},
 			want: res{},
 		},

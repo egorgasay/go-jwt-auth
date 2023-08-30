@@ -10,7 +10,6 @@ import (
 	"go-jwt-auth/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
@@ -38,15 +37,9 @@ func (d Database) Close() error {
 }
 
 // SaveToken saves a token.
-func (d Database) SaveToken(ctx context.Context, t models.TokenData) error {
-	opts := &options.ReplaceOptions{}
-	opts.SetUpsert(true)
-	filter := bson.D{{_guid, t.GUID}, {_refreshHash, ""}}
-	if _, err := d.db.Collection(_tokens).ReplaceOne(ctx, filter, t, opts); err != nil {
-		if mongo.IsDuplicateKeyError(err) {
-			return constants.ErrAlreadyExists
-		}
-		return err
+func (d Database) SaveTokenData(ctx context.Context, t models.TokenData) error {
+	if _, err := d.db.Collection(_tokens).InsertOne(ctx, t); err != nil {
+		return fmt.Errorf("can't insert token: %v", err)
 	}
 
 	return nil

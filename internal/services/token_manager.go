@@ -79,17 +79,13 @@ func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access stri
 		return "", "", constants.ErrCantHashToken
 	}
 
-	if err := tm.repository.SaveToken(ctx, models.TokenData{
+	if err := tm.repository.SaveTokenData(ctx, models.TokenData{
 		GUID:        guid,
 		RefreshHash: string(bcryptHash),
 		RefreshExp:  time.Now().Add(tm.refreshTTL).Unix(),
 		AccessExp:   time.Now().Add(tm.accessTTL).Unix(),
 	}); err != nil {
 		tm.logger.Error("can't save token", zap.Error(err))
-		if errors.Is(err, constants.ErrAlreadyExists) {
-			return "", "", constants.ErrAlreadyExists
-		}
-
 		return "", "", constants.ErrRepository
 	}
 

@@ -16,7 +16,7 @@ type Database struct {
 }
 
 const (
-	_dbName = "jwt-auth-db"
+	DBName  = "jwt-auth-db"
 	_autoUp = "AUTO_UP"
 )
 
@@ -26,12 +26,11 @@ func NewDatabase(conf Config) (db Database, err error) {
 
 	switch conf.Storage.DatabaseDSN {
 	case _autoUp:
-		vdbConf := dockerdb.EmptyConfig().Vendor("mongo").DBName(_dbName).
+		vdbConf := dockerdb.EmptyConfig().Vendor("mongo").DBName(DBName).
 			NoSQL(func(c dockerdb.Config) (stop bool) {
 				dsn := fmt.Sprintf("mongodb://127.0.0.1:%s", c.GetActualPort())
 				opt := options.Client()
-				opt.ApplyURI(dsn)
-				opt.SetTimeout(1 * time.Second)
+				opt.ApplyURI(dsn).SetTimeout(1 * time.Second)
 
 				client, err = mongo.Connect(ctx, opt)
 				if err != nil {
@@ -52,7 +51,7 @@ func NewDatabase(conf Config) (db Database, err error) {
 			return db, fmt.Errorf("can't up or connect to dockerdb: %v", err)
 		}
 
-		return Database{Database: client.Database(_dbName)}, nil
+		return Database{Database: client.Database(DBName)}, nil
 	case "":
 		return db, fmt.Errorf("DatabaseDSN shouldn't be empty")
 	default:
@@ -61,6 +60,6 @@ func NewDatabase(conf Config) (db Database, err error) {
 			return db, err
 		}
 
-		return Database{Database: client.Database(_dbName)}, nil
+		return Database{Database: client.Database(DBName)}, nil
 	}
 }

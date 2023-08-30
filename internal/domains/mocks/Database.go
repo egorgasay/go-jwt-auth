@@ -122,8 +122,8 @@ func (_c *Database_GetTokensDataByGUID_Call) RunAndReturn(run func(context.Conte
 	return _c
 }
 
-// SaveToken provides a mock function with given fields: ctx, t
-func (_m *Database) SaveToken(ctx context.Context, t models.TokenData) error {
+// SaveTokenData provides a mock function with given fields: ctx, t
+func (_m *Database) SaveTokenData(ctx context.Context, t models.TokenData) error {
 	ret := _m.Called(ctx, t)
 
 	var r0 error
@@ -136,31 +136,31 @@ func (_m *Database) SaveToken(ctx context.Context, t models.TokenData) error {
 	return r0
 }
 
-// Database_SaveToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SaveToken'
-type Database_SaveToken_Call struct {
+// Database_SaveTokenData_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SaveTokenData'
+type Database_SaveTokenData_Call struct {
 	*mock.Call
 }
 
-// SaveToken is a helper method to define mock.On call
+// SaveTokenData is a helper method to define mock.On call
 //   - ctx context.Context
 //   - t models.TokenData
-func (_e *Database_Expecter) SaveToken(ctx interface{}, t interface{}) *Database_SaveToken_Call {
-	return &Database_SaveToken_Call{Call: _e.mock.On("SaveToken", ctx, t)}
+func (_e *Database_Expecter) SaveTokenData(ctx interface{}, t interface{}) *Database_SaveTokenData_Call {
+	return &Database_SaveTokenData_Call{Call: _e.mock.On("SaveTokenData", ctx, t)}
 }
 
-func (_c *Database_SaveToken_Call) Run(run func(ctx context.Context, t models.TokenData)) *Database_SaveToken_Call {
+func (_c *Database_SaveTokenData_Call) Run(run func(ctx context.Context, t models.TokenData)) *Database_SaveTokenData_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(models.TokenData))
 	})
 	return _c
 }
 
-func (_c *Database_SaveToken_Call) Return(_a0 error) *Database_SaveToken_Call {
+func (_c *Database_SaveTokenData_Call) Return(_a0 error) *Database_SaveTokenData_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *Database_SaveToken_Call) RunAndReturn(run func(context.Context, models.TokenData) error) *Database_SaveToken_Call {
+func (_c *Database_SaveTokenData_Call) RunAndReturn(run func(context.Context, models.TokenData) error) *Database_SaveTokenData_Call {
 	_c.Call.Return(run)
 	return _c
 }
