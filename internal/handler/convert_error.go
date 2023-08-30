@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// HTTPError converts an error to a HTTP error
 func HTTPError(c *gin.Context, err error) {
 	switch err { // no errors.Is() because we get an explicit error from the service every time.
 	case constants.ErrMissingRefreshToken, constants.ErrMissingAccessToken:

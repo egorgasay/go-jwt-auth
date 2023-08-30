@@ -31,6 +31,10 @@ func NewConfig() (conf Config, err error) {
 		return conf, fmt.Errorf("can't load config: %v", err)
 	}
 
+	if dsn, ok := os.LookupEnv("JWT_AUTH_DATABASE_DSN"); ok {
+		conf.Storage.DatabaseDSN = dsn
+	}
+
 	return conf, nil
 }
 

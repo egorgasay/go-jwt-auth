@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  app:
+    image: golang:1.21-alpine
+    volumes:
+      - .:/go/src/go-with-compose
+    working_dir: /go/src/go-with-compose
+    environment:
+      JWT_AUTH_DATABASE_DSN: "mongodb://market_db:27017"
+    command: go run cmd/main.go go
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+
+  db:
+    image: mongo:4.2.8
+    volumes:
+      - .data:/data/db
+      - .data/conf:/data/configdb
