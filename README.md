@@ -1,4 +1,4 @@
-# go-jwt-auth [![CI](https://github.com/egorgasay/telemarket/actions/workflows/go.yml/badge.svg)](https://github.com/egorgasay/go-jwt-auth/actions/workflows/ci.yml)
+# go-jwt-auth [![CI](https://github.com/egorgasay/telemarket/actions/workflows/ci.yml/badge.svg)](https://github.com/egorgasay/go-jwt-auth/actions/workflows/ci.yml)
 
 ### ⚙️ Installation
 
