@@ -56,18 +56,23 @@ func NewTokenManager(
 
 const (
 	_guid = "guid"
-	_exp  = "exp"
+	_iat  = "iat"
 )
 
 // GetTokens retrieves the access and refresh tokens for a given GUID.
 func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access string, refresh string, err error) {
-	access, err = tm.generator.AccessToken(ctx, guid, tm.key)
+	var (
+		accessExp  int64
+		refreshExp int64
+	)
+
+	access, accessExp, err = tm.generator.AccessToken(ctx, guid, tm.key, tm.accessTTL)
 	if err != nil {
 		tm.logger.Error("can't generate access token", zap.Error(err))
 		return "", "", errors.Join(constants.ErrGenerate, err)
 	}
 
-	refresh, err = tm.generator.RefreshToken(ctx)
+	refresh, refreshExp, err = tm.generator.RefreshToken(ctx, tm.refreshTTL)
 	if err != nil {
 		tm.logger.Error("can't generate refresh token", zap.Error(err))
 		return "", "", errors.Join(constants.ErrGenerate, err)
@@ -82,8 +87,8 @@ func (tm *TokenManager) GetTokens(ctx context.Context, guid string) (access stri
 	if err := tm.repository.SaveTokenData(ctx, models.TokenData{
 		GUID:        guid,
 		RefreshHash: string(bcryptHash),
-		RefreshExp:  time.Now().Add(tm.refreshTTL).Unix(),
-		AccessExp:   time.Now().Add(tm.accessTTL).Unix(),
+		RefreshExp:  refreshExp,
+		AccessExp:   accessExp,
 	}); err != nil {
 		tm.logger.Error("can't save token", zap.Error(err))
 		return "", "", constants.ErrRepository
@@ -131,6 +136,7 @@ func (tm *TokenManager) RefreshTokens(ctx context.Context, oldAccessB64, oldRefr
 
 	for _, tokenData := range userTokens {
 		if err = validateTokenHash([]byte(tokenData.RefreshHash), oldRefreshBytes); err != nil {
+			tm.logger.Debug("can't validate token", zap.Error(err))
 			continue
 		}
 
@@ -147,8 +153,7 @@ func (tm *TokenManager) RefreshTokens(ctx context.Context, oldAccessB64, oldRefr
 	}
 
 	if err != nil {
-		tm.logger.Debug("can't validate token", zap.Error(err))
-		return "", "", constants.ErrInvalidToken
+		return "", "", err
 	}
 
 	return tm.GetTokens(ctx, guid)

@@ -9,6 +9,7 @@ import (
 	"go-jwt-auth/internal/lib"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
+	"time"
 )
 
 type GeneratorService struct {
@@ -24,44 +25,49 @@ func NewGeneratorService(logger lib.Logger) domains.GeneratorService {
 func (g *GeneratorService) AccessToken(
 	ctx context.Context,
 	guid string, key []byte,
-) (access string, err error) {
+	accessTTL time.Duration,
+) (access string, exp int64, err error) {
 
 	if ctx.Err() != nil {
-		return "", ctx.Err()
+		return "", 0, ctx.Err()
 	}
 
 	if guid == "" {
-		return "", constants.ErrInvalidGUID
+		return "", 0, constants.ErrInvalidGUID
 	}
+
+	exp = time.Now().Add(accessTTL).Unix()
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS512,
 		jwt.MapClaims{
 			_guid: guid,
+			_iat:  exp,
 		})
 
 	access, err = t.SignedString(key)
 	if err != nil {
 		g.logger.Error("can't sign token", zap.Error(err))
-		return "", constants.ErrSignToken
+		return "", 0, constants.ErrSignToken
 	}
 
-	return access, nil
+	return access, exp, nil
 }
 
 func (g *GeneratorService) RefreshToken(
 	ctx context.Context,
-) (token string, err error) {
+	refreshTTL time.Duration,
+) (token string, exp int64, err error) {
 	if ctx.Err() != nil {
-		return "", ctx.Err()
+		return "", 0, ctx.Err()
 	}
 
 	uuidObj, err := uuid.NewUUID()
 	if err != nil {
 		g.logger.Error("can't generate uuid", zap.Error(err))
-		return "", constants.ErrGenerateToken
+		return "", 0, constants.ErrGenerateToken
 	}
 
-	return uuidObj.String(), nil
+	return uuidObj.String(), time.Now().Add(refreshTTL).Unix(), nil
 }
 
 // bcryptHashFrom generates a bcrypt hash from a given token.

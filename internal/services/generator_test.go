@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"go-jwt-auth/internal/constants"
 	"go-jwt-auth/internal/lib"
 	"testing"
@@ -71,9 +72,21 @@ func TestGeneratorService_AccessToken(t *testing.T) {
 				logger: logger,
 			}
 			var got res
-			_, got.Err = g.AccessToken(tt.args.ctx, tt.args.guid, tt.args.key)
+			got.Access, _, got.Err = g.AccessToken(tt.args.ctx, tt.args.guid, tt.args.key, tt.args.accessTTL)
 			if !errors.Is(got.Err, tt.want.Err) {
 				t.Errorf("JWTToken() error = %v, wantErr %v", got.Err, tt.want.Err)
+			} else if tt.want.Err != nil {
+				return
+			}
+
+			tm := &TokenManager{logger: logger, key: tt.args.key}
+			guid, err := tm.guidFromJWT(got.Access)
+			if err != nil {
+				t.Errorf("guidFromJWT() error = %v", err)
+			}
+
+			if guid != tt.args.guid {
+				t.Errorf("AccessToken() = %v, want %v", guid, tt.args.guid)
 			}
 		})
 	}
@@ -81,12 +94,13 @@ func TestGeneratorService_AccessToken(t *testing.T) {
 
 func TestGeneratorService_RefreshToken(t *testing.T) {
 	type res struct {
-		Access string
-		Exp    int64
-		Err    error
+		Refresh string
+		Exp     int64
+		Err     error
 	}
 	type args struct {
 		ctx context.Context
+		ttl time.Duration
 	}
 	tests := []struct {
 		name string
@@ -120,9 +134,14 @@ func TestGeneratorService_RefreshToken(t *testing.T) {
 				logger: logger,
 			}
 			var got res
-			_, got.Err = g.RefreshToken(tt.args.ctx)
+			got.Refresh, _, got.Err = g.RefreshToken(tt.args.ctx, tt.args.ttl)
 			if !errors.Is(got.Err, tt.want.Err) {
 				t.Errorf("JWTToken() error = %v, wantErr %v", got.Err, tt.want.Err)
+			}
+
+			_, err := uuid.Parse(got.Refresh)
+			if err != nil {
+				t.Errorf("uuid.Parse() error = %v", err)
 			}
 		})
 	}
