@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/egorgasay/dockerdb/v3"
+	"go-jwt-auth/internal/constants"
 	"go-jwt-auth/internal/lib"
 	"go-jwt-auth/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -112,4 +113,88 @@ func upMongo(ctx context.Context, t *testing.T) (vdb *dockerdb.VDB, cl *mongo.Cl
 	}
 
 	return vdb, cl, err
+}
+
+func TestDatabase_GetTokensDataByGUID(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		guid string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []models.TokenData
+		wantErr error
+	}{
+		{
+			name: "ok",
+			args: args{
+				ctx:  context.Background(),
+				guid: "123",
+			},
+			want: []models.TokenData{
+				{
+					GUID:        "123",
+					RefreshHash: "hwejhvqvf",
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "ok#2",
+			args: args{
+				ctx:  context.Background(),
+				guid: "yguf67d7rr7di",
+			},
+			want: []models.TokenData{
+				{
+					GUID:        "yguf67d7rr7di",
+					RefreshHash: "qjfwjnqk",
+				},
+				{
+					GUID:        "yguf67d7rr7di",
+					RefreshHash: "ebfkqbfb",
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "notFound",
+			args: args{
+				ctx:  context.Background(),
+				guid: "qlmf;lqm",
+			},
+			wantErr: constants.ErrNotFound,
+		},
+	}
+
+	ctx := context.Background()
+	vdb, client, err := upMongo(ctx, t)
+	defer func() {
+		err = vdb.Clear(ctx)
+		if err != nil {
+			t.Errorf("can't clear container, possible container leak and wrong results in the future tests: %v", err)
+		}
+	}()
+
+	d := Database{
+		db: lib.Database{Database: client.Database(lib.DBName)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, td := range tt.want {
+				if err := d.SaveTokenData(tt.args.ctx, td); !errors.Is(err, tt.wantErr) {
+					t.Errorf("SaveToken() error = %v, wantErr %v", err, tt.wantErr)
+				}
+			}
+
+			td, err := d.GetTokensDataByGUID(tt.args.ctx, tt.args.guid)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("GetTokensDataByGUID() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			assert.DeepEqual(t, tt.want, td)
+		})
+	}
 }

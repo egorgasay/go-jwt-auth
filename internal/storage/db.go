@@ -50,23 +50,21 @@ func (d Database) GetTokensDataByGUID(ctx context.Context, guid string) (t []mod
 	filter := bson.D{{_guid, guid}}
 	cur, err := d.db.Collection(_tokens).Find(ctx, filter)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return t, constants.ErrNotFound
-		}
-
 		return t, err
 	}
 	defer func(cur *mongo.Cursor, ctx context.Context) {
-		err = cur.Close(ctx)
+		errClose := cur.Close(ctx)
+		if errClose != nil && err == nil {
+			err = errClose
+		}
 	}(cur, ctx)
 
-	for cur.Next(ctx) {
-		var td models.TokenData
-		err := cur.Decode(&td)
-		if err != nil {
-			return t, err
-		}
-		t = append(t, td)
+	if err := cur.All(ctx, &t); err != nil {
+		return nil, err
+	}
+
+	if len(t) == 0 {
+		return t, constants.ErrNotFound
 	}
 
 	return t, nil
